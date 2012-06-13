@@ -1,0 +1,5 @@
+<language en>
+FedorBall -- is a toy-ball which detects current top position
+with accelerometer MMA7455 and turns on leds in special order
+using 4 led drivers TLC5940.
+</language en>
