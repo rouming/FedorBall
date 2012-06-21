@@ -19,6 +19,10 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <math.h>
+
+#include <stdio.h>
+
 using std::stringstream;
 using std::cout;
 using std::endl;
@@ -172,12 +176,12 @@ GLfloat normals2[]  = { 0, 0, 1,   0, 0, 1,   0, 0, 1,   0, 0, 1,   // v0,v1,v2,
                         0, 0,-1,   0, 0,-1,   0, 0,-1,   0, 0,-1 }; // v4,v7,v6,v5 (back)
 
 // color array
-GLfloat colors2[]   = { 1, 1, 1,   1, 1, 0,   1, 0, 0,   1, 0, 1,   // v0,v1,v2,v3 (front)
-                        1, 1, 1,   1, 0, 1,   0, 0, 1,   0, 1, 1,   // v0,v3,v4,v5 (right)
-                        1, 1, 1,   0, 1, 1,   0, 1, 0,   1, 1, 0,   // v0,v5,v6,v1 (top)
-                        1, 1, 0,   0, 1, 0,   0, 0, 0,   1, 0, 0,   // v1,v6,v7,v2 (left)
-                        0, 0, 0,   0, 0, 1,   1, 0, 1,   1, 0, 0,   // v7,v4,v3,v2 (bottom)
-                        0, 0, 1,   0, 0, 0,   0, 1, 0,   0, 1, 1 }; // v4,v7,v6,v5 (back)
+GLfloat colors2[]   = { 1, 1, 1,   1, 1, 1,   1, 1, 1,   1, 1, 1,   // v0,v1,v2,v3 (front)
+                        0, 0, 1,   0, 0, 1,   0, 0, 1,   0, 0, 1,   // v0,v3,v4,v5 (right)
+                        1, 0, 1,   1, 0, 1,   1, 0, 1,   1, 0, 1,   // v0,v5,v6,v1 (top)
+                        1, 1, 0,   1, 1, 0,   1, 1, 0,   1, 1, 0,   // v1,v6,v7,v2 (left)
+                        4, 0, 1,   4, 0, 1,   4, 0, 1,   4, 0, 1,   // v7,v4,v3,v2 (bottom)
+                        0, 1, 1,   0, 1, 1,   0, 1, 1,   0, 1, 1 }; // v4,v7,v6,v5 (back)
 
 // index array of vertex array for glDrawElements() & glDrawRangeElement()
 // Notice the indices are listed straight from beginning to end as exactly
@@ -228,6 +232,235 @@ GLfloat vertices3[] = { 1, 1, 1,   0, 0, 1,   1, 1, 1,              // v0 (front
                         1, 1,-1,   0, 0,-1,   0, 1, 1 };            // v5
 
 
+struct point
+{
+	GLfloat x;
+	GLfloat y;
+	GLfloat z;
+};
+
+bool operator<(const point& p1, const point& p2)
+{
+	const GLfloat epsilon = 1e-8;
+
+	if (p1.x < p2.x - epsilon) return true;
+	if (p1.x > p2.x + epsilon) return false;
+
+	if (p1.y < p2.y - epsilon) return true;
+	if (p1.y > p2.y + epsilon) return false;
+
+	if (p1.z < p2.z - epsilon) return true;
+
+  return false;
+
+	/*
+	GLfloat sz1 = sqrt(p1.x*p1.x + p1.y*p1.y + p1.z*p1.z);
+	GLfloat sz2 = sqrt(p2.x*p2.x + p2.y*p2.y + p2.z*p2.z);
+	return sz1 < sz2;
+	*/
+	return p1.x < p2.x || p1.y < p2.y || p1.z < p2.z;
+}
+
+bool operator==(const point& p1, const point& p2)
+{
+	return p1.x == p2.x && p1.y == p2.y && p1.z == p2.z;
+}
+
+struct vector
+{
+	GLfloat x;
+	GLfloat y;
+	GLfloat z;
+};
+
+struct triangle
+{
+	point p0;
+	point p1;
+	point p2;
+};
+
+void create_triangle(GLfloat *vertices, unsigned int idx,
+							triangle& tr)
+{
+	tr.p0.x = vertices[idx + 0];
+	tr.p0.y = vertices[idx + 1];
+	tr.p0.z = vertices[idx + 2];
+
+	tr.p1.x = vertices[idx + 3];
+	tr.p1.y = vertices[idx + 4];
+	tr.p1.z = vertices[idx + 5];
+
+	tr.p2.x = vertices[idx + 6];
+	tr.p2.y = vertices[idx + 7];
+	tr.p2.z = vertices[idx + 8];
+};
+
+void create_triangle(GLfloat *vertices, GLbyte *faces,
+					 unsigned int idx, triangle& tr)
+{
+	tr.p0.x = vertices[faces[idx + 0] * 3 + 0];
+	tr.p0.y = vertices[faces[idx + 0] * 3 + 1];
+	tr.p0.z = vertices[faces[idx + 0] * 3 + 2];
+
+	tr.p1.x = vertices[faces[idx + 1] * 3 + 0];
+	tr.p1.y = vertices[faces[idx + 1] * 3 + 1];
+	tr.p1.z = vertices[faces[idx + 1] * 3 + 2];
+
+	tr.p2.x = vertices[faces[idx + 2] * 3 + 0];
+	tr.p2.y = vertices[faces[idx + 2] * 3 + 1];
+	tr.p2.z = vertices[faces[idx + 2] * 3 + 2];
+};
+
+
+static void vector_cross(const vector& a, const vector& b, vector& r)
+{
+	r.x = a.y * b.z - a.z * b.y;
+	r.y = a.z * b.x - a.x * b.z;
+	r.z = a.x * b.y - a.y * b.x;
+}
+
+static void vector_normalize(vector& v)
+{
+#define SMALL_VECTOR (1e-4)
+	GLfloat size = sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+	if (size < SMALL_VECTOR) {
+		printf("Vector is too small!\n");
+		exit(-1);
+	}
+
+	v.x /= size;
+	v.y /= size;
+	v.z /= size;
+}
+
+static void normal(const triangle& tr, vector& n)
+{
+	vector v1 = {tr.p1.x - tr.p0.x, tr.p1.y - tr.p0.y, tr.p1.z - tr.p0.z};
+	vector v2 = {tr.p2.x - tr.p0.x, tr.p2.y - tr.p0.y, tr.p2.z - tr.p0.z};
+	vector_cross(v1, v2, n);
+	vector_normalize(n);
+}
+
+static float phi = (1.0 + sqrt(5.0)) / 2.0;
+static float phi_1 = 1-phi;
+static float phi2 = phi * phi;
+static float phi3 = phi * phi * phi;
+static GLfloat dod_orig_vert[] =
+{
+/*
+	0,   phi,  phi3, // V4   0
+	0,  -phi,  phi3, // V8   1
+
+	phi2,  phi2,  phi2, // V11  2
+	-phi2,  phi2,  phi2, // V13  3
+	-phi2, -phi2,  phi2, // V16  4
+	phi2, -phi2,  phi2, // V18  5
+
+	phi3,     0,   phi, // V20  6
+	-phi3,     0,   phi, // V23  7
+	phi,  phi3,     0, // V28  8
+	-phi,  phi3,     0, // V30  9
+	-phi, -phi3,     0, // V34 10
+	phi, -phi3,     0, // V36 11
+	phi3,     0,  -phi, // V38 12
+	-phi3,     0,  -phi, // V41 13
+
+	phi2,  phi2, -phi2, // V45 14
+	-phi2,  phi2, -phi2, // V47 15
+	-phi2, -phi2, -phi2, // V50 16
+	phi2, -phi2, -phi2, // V52 17
+
+	0,   phi, -phi3, // V56 18
+	0,  -phi, -phi3  // V60 19
+*/
+
+	0, phi_1, phi,
+	0, phi_1, -phi,
+	0, -phi_1, phi,
+	0, -phi_1, -phi,
+	phi, 0, phi_1,
+	phi, 0, -phi_1,
+	-phi, 0, phi_1,
+	-phi, 0, -phi_1,
+	phi_1, phi, 0,
+	phi_1, -phi, 0,
+	-phi_1, phi, 0,
+	-phi_1, -phi, 0,
+	1, 1, 1,
+	1, 1, -1,
+	1, -1, 1,
+	1, -1, -1,
+	-1, 1, 1,
+	-1, 1, -1,
+	-1, -1, 1,
+	-1, -1, -1
+
+};
+
+static GLbyte dod_orig_faces[] =
+{
+/*
+	1, 0, 4,   0, 3, 4,   3, 7, 4,
+	0, 1, 2,   1, 5, 2,   5, 6, 2,
+
+	0, 2, 3,   2, 8, 3,   8, 9, 3,
+	1, 4, 5,   4,10, 5,   10,11, 5,
+
+	3, 9, 7,   9,15, 7,   15,13, 7,
+	4, 7,10,   7,13,10,   13,16,10,
+	5,11, 6,   11,17, 6,  17,12, 6,
+	2, 6, 8,   6,12, 8,   12,14, 8,
+
+	9, 8,15,   8,14,15,   14,18,15,
+	11,10,17,  10,16,17,  16,19,17,
+	13,15,16,  15,18,16,  18,19,16,
+	12,17,14,  17,19,14,  19,18,14
+*/
+
+	12, 2, 0,   12, 0, 14,  12, 14, 5,
+	10, 8, 16,  10, 16, 2,  10, 2, 12,
+	17, 6, 7,   17, 7, 16,  17, 16, 8,
+	16, 7, 18,  16, 18, 0,  16, 0, 2,
+	0,  18, 9,  0,  9, 11,  0, 11, 14,
+	5, 14, 11,  5, 11, 15,  5, 15, 4,
+	13, 4, 15,  13, 15, 1,  13, 1, 3,
+	17, 3, 1,   17, 1, 19,  17, 19, 6,
+
+	10, 12, 5,  10, 5, 4,   10, 4, 13,
+	3, 17, 8,   3, 8 ,10,   3, 10, 13,
+	11, 9, 19,  11, 19, 1,  11, 1, 15,
+	9, 18, 7,   9, 7, 6,    9, 6, 19, //??
+
+};
+
+GLfloat dod_colors[] =
+{
+	1, 1, 1,   1, 1, 1,   1, 1, 1,
+	1, 0, 1,   1, 0, 1,   1, 0, 1,
+
+	0, 0, 1,   0, 0, 1,   0, 0, 1,
+	0, 1, 1,   0, 1, 1,   0, 1, 1,
+
+	1, 1, 0,   1, 1, 0,   1, 1, 0,
+	1, 0, 0,   1, 0, 0,   1, 0, 0,
+
+	5, 0, 1,   5, 0, 1,   5, 0, 1,
+	0, 5, 0,   0, 5, 0,   0, 5, 0,
+
+	3, 3, 1,   3, 3, 1,   3, 3, 1,
+	4, 0, 3,   4, 0, 3,    4, 0, 3,
+
+	4, 0, 1,   4, 0, 1,   4, 0, 1,
+	1, 1, 5,   1, 1, 5,   1, 1, 5
+};
+
+//faces * verteces_per_face * cords_in_3d
+static GLfloat dod_vert[12*5*3];
+//faces * verteces_per_face * cords_in_3d
+static GLfloat dod_normals[12*5*3];
+//faces * triangles_per_face * points_per_triangle
+static GLbyte dod_faces[12*3*3];
 
 ///////////////////////////////////////////////////////////////////////////////
 // draw 1: immediate mode
@@ -368,6 +601,7 @@ void draw1()
 ///////////////////////////////////////////////////////////////////////////////
 void draw2()
 {
+	/*
     // enble and specify pointers to vertex arrays
     glEnableClientState(GL_NORMAL_ARRAY);
     glEnableClientState(GL_COLOR_ARRAY);
@@ -386,6 +620,28 @@ void draw2()
     glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
     glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
+	*/
+
+    // enable and specify pointers to vertex arrays
+    glEnableClientState(GL_NORMAL_ARRAY);
+    //glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glNormalPointer(GL_FLOAT, 0, normals2);
+    //glColorPointer(3, GL_FLOAT, 0, colors2);
+    glVertexPointer(3, GL_FLOAT, 0, vertices2);
+
+
+    glPushMatrix();
+    glTranslatef(2, 2, 0);                // move to upper-right corner
+
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indices);
+
+    glPopMatrix();
+
+    glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
+    //glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_NORMAL_ARRAY);
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -398,25 +654,101 @@ void draw2()
 // Note that you need an additional array (index array) to store how to traverse
 // the vertext data. For a cube, we need 36 entries in the index array.
 ///////////////////////////////////////////////////////////////////////////////
+#include <set>
+#include <list>
+#include <assert.h>
+
 void draw3()
 {
+
+	//XXX
+	static int s_inited = 0;
+	if (!s_inited)
+	{
+		s_inited = 1;
+
+		// init dod verteces and faces
+		int sz = sizeof(dod_orig_faces)/sizeof(dod_orig_faces[0]);
+		for (int i = 0; i < sz; i += 9) {
+			int face_i = i / 9;
+
+			std::set<point> verts;
+			typedef std::list<point> faces_list;
+			faces_list faces;
+
+			for (int j = 0; j < 9; ++j) {
+				GLfloat x = dod_orig_vert[dod_orig_faces[i+j] * 3 + 0];
+				GLfloat y = dod_orig_vert[dod_orig_faces[i+j] * 3 + 1];
+				GLfloat z = dod_orig_vert[dod_orig_faces[i+j] * 3 + 2];
+				point p = {x, y, z};
+				verts.insert(p);
+				faces.push_back(p);
+			}
+
+			assert(verts.size() == 5);
+			assert(faces.size() == 9);
+
+			int ind = 0;
+			for (faces_list::iterator it = faces.begin();
+				 it != faces.end();
+				 ++it, ++ind) {
+				point& p = *it;
+				std::set<point>::iterator v_it = verts.find(p);
+				assert(v_it != verts.end());
+				int id = std::distance(verts.begin(), v_it);
+				assert(id >= 0 && id < 5);
+
+				dod_vert[face_i*5*3 + id*3 + 0] = p.x;
+				dod_vert[face_i*5*3 + id*3 + 1] = p.y;
+				dod_vert[face_i*5*3 + id*3 + 2] = p.z;
+
+				dod_faces[face_i*3*3 + ind] = face_i*5 + id;
+			}
+		}
+
+		sz = sizeof(dod_faces)/sizeof(dod_faces[0]);
+		for (int i = 0; i < sz; i += 3) {
+			triangle tr;
+			vector n;
+			create_triangle(dod_vert, dod_faces, i, tr);
+			normal(tr, n);
+
+			dod_normals[dod_faces[i+0]*3 + 0] = n.x;
+			dod_normals[dod_faces[i+0]*3 + 1] = n.y;
+			dod_normals[dod_faces[i+0]*3 + 2] = n.z;
+
+			dod_normals[dod_faces[i+1]*3 + 0] = n.x;
+			dod_normals[dod_faces[i+1]*3 + 1] = n.y;
+			dod_normals[dod_faces[i+1]*3 + 2] = n.z;
+
+			dod_normals[dod_faces[i+2]*3 + 0] = n.x;
+			dod_normals[dod_faces[i+2]*3 + 1] = n.y;
+			dod_normals[dod_faces[i+2]*3 + 2] = n.z;
+		}
+	}
+
+
     // enable and specify pointers to vertex arrays
     glEnableClientState(GL_NORMAL_ARRAY);
-    glEnableClientState(GL_COLOR_ARRAY);
+    //glEnableClientState(GL_COLOR_ARRAY);
     glEnableClientState(GL_VERTEX_ARRAY);
-    glNormalPointer(GL_FLOAT, 0, normals2);
-    glColorPointer(3, GL_FLOAT, 0, colors2);
-    glVertexPointer(3, GL_FLOAT, 0, vertices2);
+    //glNormalPointer(GL_FLOAT, 0, normals2);
+	glNormalPointer(GL_FLOAT, 0, dod_normals);
+    //glColorPointer(3, GL_FLOAT, 0, colors2);
+    //glColorPointer(3, GL_FLOAT, 0, dod_colors);
+    //glVertexPointer(3, GL_FLOAT, 0, vertices2);
+	glVertexPointer(3, GL_FLOAT, 0, dod_vert);
 
     glPushMatrix();
     glTranslatef(-2, -2, 0);                // move to bottom-left corner
 
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indices);
+    //glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_BYTE, indices);
+	glDrawElements(GL_TRIANGLES, 108, GL_UNSIGNED_BYTE, dod_faces);
 
     glPopMatrix();
 
     glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
-    glDisableClientState(GL_COLOR_ARRAY);
+    //glDisableClientState(GL_COLOR_ARRAY);
     glDisableClientState(GL_NORMAL_ARRAY);
 }
 
@@ -825,11 +1157,11 @@ void displayCB()
     glRotatef(cameraAngleX, 1, 0, 0);   // pitch
     glRotatef(cameraAngleY, 0, 1, 0);   // heading
 
-    draw1();        // with immediate mode, glBegin()-glEnd() block
-    draw2();        // with glDrawArrays()
-    //draw3();        // with glDrawElements()
-    draw5();        // with glDrawElements() with interleave vertex array
-    draw4();        // with glDrawRangeElements()
+    //draw1();        // with immediate mode, glBegin()-glEnd() block
+    draw2();        // with glDrawArrys()
+    draw3();        // with glDrawElements()
+    //draw5();        // with glDrawElements() with interleave vertex array
+    //draw4();        // with glDrawRangeElements()
 
 
     // print 2D text
@@ -842,6 +1174,23 @@ void displayCB()
     drawString3D("glDrawElements()", pos, color, font);
     pos[0] = 0.5f;
     drawString3D("glDrawRangeElements()", pos, color, font);
+
+
+	///XXX
+	if (0)
+	{
+		for (unsigned int i = 0;
+			 i < sizeof(dod_vert)/sizeof(dod_vert[0]); i+=3) {
+			float pos[4] = {0, 0, 0, 0};
+			pos[0] = dod_vert[i + 0];
+			pos[1] = dod_vert[i + 1];
+			pos[2] = dod_vert[i + 2];
+			std::stringstream s;
+			s << "v" << int(i/3);
+			drawString3D(s.str().c_str(), pos, color, font);
+		}
+	}
+
 
     showInfo();     // print max range of glDrawRangeElements
 

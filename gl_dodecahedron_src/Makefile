@@ -15,12 +15,12 @@ RANLIB = ranlib
 WINDRES = windres
 
 INC = 
-CFLAGS = -Wall -O2
+CFLAGS = -Wall -g
 RESINC = 
 RCFLAGS = 
 LIBDIR = 
 LIB = -lglut -lGLU -lGL -lm
-LDFLAGS =
+LDFLAGS = -g
 
 INC_DEFAULT = $(INC)
 CFLAGS_DEFAULT = $(CFLAGS)
