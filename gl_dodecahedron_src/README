@@ -1,4 +1,5 @@
 OpenGL sources for simulation and visualizing dodecahdron.
 nothing else.
 
-
+based on http://www.songho.ca/opengl/gl_vertexarray.html sources
+original cpp is orig_main.cpp
