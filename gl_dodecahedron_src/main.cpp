@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "raytri.h"
+
 using std::stringstream;
 using std::cout;
 using std::endl;
@@ -282,6 +284,7 @@ static GLbyte dod_faces[12*3*3];
 
 void drawDodecahedron()
 {
+	point line_dir = {-1.1, 2, -1.1};
 
 	//XXX
 	static int s_inited = 0;
@@ -364,6 +367,59 @@ void drawDodecahedron()
 	glDrawElements(GL_TRIANGLES, 108, GL_UNSIGNED_BYTE, dod_faces);
 
     glPopMatrix();
+
+	// Draw lines
+	glBegin(GL_LINES);
+	glColor3f(1,0,0);
+	glVertex3f(0.0f, 0.0f, 0.0f); // origin of the line
+	glVertex3f(line_dir.x, line_dir.y, line_dir.z); // ending point of the line
+	glColor3f(1,1,1);
+	glEnd();
+
+	// Draw sphere
+	glColor3f(0,1,0);
+	//glutSolidSphere(0.96999, 100, 100);
+	glColor3f(1,1,1);
+
+
+	// Draw intersections
+	{
+		int sz = sizeof(dod_faces)/sizeof(dod_faces[0]);
+		for (int i = 0; i < sz; i += 3) {
+			triangle tr;
+			create_triangle(dod_vert, dod_faces, i, tr);
+
+			//Count intersection with triangle
+			double orig[3] = {0, 0, 0};
+			double dir[3] = {line_dir.x, line_dir.y, line_dir.z};
+			double vert0[3] = {tr.p0.x, tr.p0.y, tr.p0.z};
+			double vert1[3] = {tr.p1.x, tr.p1.y, tr.p1.z};
+			double vert2[3] = {tr.p2.x, tr.p2.y, tr.p2.z};
+			double t, u, v;
+			if (intersect_triangle(orig, dir,
+								   vert0, vert1, vert2,
+								   &t, &u, &v) && t > 0) {
+
+				// Draw lines
+				glBegin(GL_LINES);
+				glColor3f(0,1,1);
+				glVertex3f(tr.p0.x, tr.p0.y, tr.p0.z);
+				glVertex3f(tr.p1.x, tr.p1.y, tr.p1.z);
+
+				glVertex3f(tr.p1.x, tr.p1.y, tr.p1.z);
+				glVertex3f(tr.p2.x, tr.p2.y, tr.p2.z);
+
+
+				glVertex3f(tr.p2.x, tr.p2.y, tr.p2.z);
+				glVertex3f(tr.p0.x, tr.p0.y, tr.p0.z);
+
+				glColor3f(1,1,1);
+				glEnd();
+
+			}
+		}
+	}
+
 
     glDisableClientState(GL_VERTEX_ARRAY);  // disable vertex arrays
     glDisableClientState(GL_NORMAL_ARRAY);
