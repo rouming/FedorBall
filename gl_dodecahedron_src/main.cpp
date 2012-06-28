@@ -51,7 +51,7 @@ void drawDodecahedron();
 // constants
 const int   SCREEN_WIDTH    = 400;
 const int   SCREEN_HEIGHT   = 300;
-const float CAMERA_DISTANCE = 10.0f;
+const float CAMERA_DISTANCE = 4.0f;
 const int   TEXT_WIDTH      = 8;
 const int   TEXT_HEIGHT     = 13;
 
