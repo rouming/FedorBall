@@ -33,7 +33,7 @@ OBJDIR_DEFAULT = obj
 DEP_DEFAULT = 
 OUT_DEFAULT = dodecahedron
 
-OBJ_DEFAULT = $(OBJDIR_DEFAULT)/main.o
+OBJ_DEFAULT = $(OBJDIR_DEFAULT)/main.o $(OBJDIR_DEFAULT)/raytri.o
 
 all: default
 
@@ -47,6 +47,10 @@ $(OUT_DEFAULT): $(OBJ_DEFAULT) $(DEP_DEFAULT)
 $(OBJDIR_DEFAULT)/main.o: main.cpp
 	test -d $(OBJDIR_DEFAULT) || mkdir -p $(OBJDIR_DEFAULT)
 	$(CPP) $(CFLAGS_DEFAULT) $(INC_DEFAULT) -c -o $(OBJDIR_DEFAULT)/main.o main.cpp
+
+$(OBJDIR_DEFAULT)/raytri.o: raytri.c
+	test -d $(OBJDIR_DEFAULT) || mkdir -p $(OBJDIR_DEFAULT)
+	$(CPP) $(CFLAGS_DEFAULT) $(INC_DEFAULT) -c -o $(OBJDIR_DEFAULT)/raytri.o raytri.c
 
 
 clean_default:
