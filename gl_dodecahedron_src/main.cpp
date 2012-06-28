@@ -175,6 +175,25 @@ static void vector_normalize(vector& v)
 	v.z /= size;
 }
 
+static void triangle_normalize(triangle& tr)
+{
+	vector v0 = {tr.p0.x, tr.p0.y, tr.p0.z};
+	vector v1 = {tr.p1.x, tr.p1.y, tr.p1.z};
+	vector v2 = {tr.p2.x, tr.p2.y, tr.p2.z};
+
+	vector_normalize(v0);
+	vector_normalize(v1);
+	vector_normalize(v2);
+
+	point p0 = {v0.x, v0.y, v0.z};
+	point p1 = {v1.x, v1.y, v1.z};
+	point p2 = {v2.x, v2.y, v2.z};
+
+	tr.p0 = p0;
+	tr.p1 = p1;
+	tr.p2 = p2;
+}
+
 static void normal(const triangle& tr, vector& n)
 {
 	vector v1 = {tr.p1.x - tr.p0.x, tr.p1.y - tr.p0.y, tr.p1.z - tr.p0.z};
@@ -384,10 +403,12 @@ void drawDodecahedron()
 
 	// Draw intersections
 	{
-		int sz = sizeof(dod_faces)/sizeof(dod_faces[0]);
+		int sz = sizeof(dod_orig_faces)/sizeof(dod_orig_faces[0]);
 		for (int i = 0; i < sz; i += 3) {
 			triangle tr;
-			create_triangle(dod_vert, dod_faces, i, tr);
+			create_triangle(dod_orig_vert, dod_orig_faces, i, tr);
+			triangle_normalize(tr);
+
 
 			//Count intersection with triangle
 			double orig[3] = {0, 0, 0};
