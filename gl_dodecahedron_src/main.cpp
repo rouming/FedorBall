@@ -302,7 +302,9 @@ void drawDodecahedron()
 				GLfloat x = dod_orig_vert[dod_orig_faces[i+j] * 3 + 0];
 				GLfloat y = dod_orig_vert[dod_orig_faces[i+j] * 3 + 1];
 				GLfloat z = dod_orig_vert[dod_orig_faces[i+j] * 3 + 2];
-				point p = {x, y, z};
+				vector v = {x, y, z};
+				vector_normalize(v);
+				point p = {v.x, v.y, v.z};
 				verts.insert(p);
 				faces.push_back(p);
 			}
