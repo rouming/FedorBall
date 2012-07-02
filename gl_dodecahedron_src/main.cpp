@@ -420,17 +420,24 @@ void drawDodecahedron()
 			create_triangle(dod_orig_vert, dod_orig_faces, i, tr);
 			triangle_normalize(tr);
 
-
 			//Count intersection with triangle
-			float orig[3] = {0, 0, 0};
-			float dir[3] = {line_dir.x, line_dir.y, line_dir.z};
-			float vert0[3] = {tr.p0.x, tr.p0.y, tr.p0.z};
-			float vert1[3] = {tr.p1.x, tr.p1.y, tr.p1.z};
-			float vert2[3] = {tr.p2.x, tr.p2.y, tr.p2.z};
-			float t, u, v;
-			if (intersect_triangle(orig, dir,
-								   vert0, vert1, vert2,
-								   &t, &u, &v) && t > 0) {
+			fp_t orig[3] = {0, 0, 0};
+			fp_t dir[3] = {FTOFP(line_dir.x),
+						   FTOFP(line_dir.y),
+						   FTOFP(line_dir.z)};
+			fp_t vert0[3] = {FTOFP(tr.p0.x),
+							 FTOFP(tr.p0.y),
+							 FTOFP(tr.p0.z)};
+			fp_t vert1[3] = {FTOFP(tr.p1.x),
+							 FTOFP(tr.p1.y),
+							 FTOFP(tr.p1.z)};
+			fp_t vert2[3] = {FTOFP(tr.p2.x),
+							 FTOFP(tr.p2.y),
+							 FTOFP(tr.p2.z)};
+			fp_t t, u, v;
+			if (fixed_intersect_triangle(orig, dir,
+										 vert0, vert1, vert2,
+										 &t, &u, &v) && t > 0) {
 
 				// Draw lines
 				glBegin(GL_LINES);

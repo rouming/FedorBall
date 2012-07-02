@@ -6,6 +6,8 @@
 
 #include <math.h>
 
+#include "raytri.h"
+
 #define EPSILON 0.0001f
 #define CROSS(dest,v1,v2)						\
 	dest[0]=v1[1]*v2[2]-v1[2]*v2[1];			\
@@ -16,6 +18,20 @@
 	dest[0]=v1[0]-v2[0];						\
 	dest[1]=v1[1]-v2[1];						\
 	dest[2]=v1[2]-v2[2];
+
+#define FIXED_EPSILON FTOFP(0.0001f)
+#define FIXED_CROSS(dest,v1,v2)								\
+	dest[0]=FPMUL(v1[1],v2[2])-FPMUL(v1[2],v2[1]);		\
+	dest[1]=FPMUL(v1[2],v2[0])-FPMUL(v1[0],v2[2]);		\
+	dest[2]=FPMUL(v1[0],v2[1])-FPMUL(v1[1],v2[0]);
+#define FIXED_DOT(v1,v2) (FPMUL(v1[0],v2[0])+ \
+						  FPMUL(v1[1],v2[1])+ \
+						  FPMUL(v1[2],v2[2]))
+#define FIXED_SUB(dest,v1,v2)					\
+	dest[0]=v1[0]-v2[0];						\
+	dest[1]=v1[1]-v2[1];						\
+	dest[2]=v1[2]-v2[2];
+
 
 /* the original jgt code */
 int intersect_triangle(float orig[3], float dir[3],
@@ -57,6 +73,50 @@ int intersect_triangle(float orig[3], float dir[3],
 
 	/* calculate t, ray intersects triangle */
 	*t = DOT(edge2, qvec) * inv_det;
+
+	return 1;
+}
+
+/* the original jgt code. fixed point version */
+int fixed_intersect_triangle(fp_t orig[3], fp_t dir[3],
+							 fp_t vert0[3], fp_t vert1[3], fp_t vert2[3],
+							 fp_t *t, fp_t *u, fp_t *v)
+{
+	fp_t edge1[3], edge2[3], tvec[3], pvec[3], qvec[3];
+	fp_t det,inv_det;
+
+	/* find vectors for two edges sharing vert0 */
+	FIXED_SUB(edge1, vert1, vert0);
+	FIXED_SUB(edge2, vert2, vert0);
+
+	/* begin calculating determinant - also used to calculate U parameter */
+	FIXED_CROSS(pvec, dir, edge2);
+
+	/* if determinant is near zero, ray lies in plane of triangle */
+	det = FIXED_DOT(edge1, pvec);
+
+	if (det > -FIXED_EPSILON && det < FIXED_EPSILON)
+		return 0;
+	inv_det = FPDIV(FPONE, det);
+
+	/* calculate distance from vert0 to ray origin */
+	FIXED_SUB(tvec, orig, vert0);
+
+	/* calculate U parameter and test bounds */
+	*u = FPMUL(FIXED_DOT(tvec, pvec), inv_det);
+	if (*u < FPZERO || *u > FPONE)
+		return 0;
+
+	/* prepare to test V parameter */
+	FIXED_CROSS(qvec, tvec, edge1);
+
+	/* calculate V parameter and test bounds */
+	*v = FPMUL(FIXED_DOT(dir, qvec), inv_det);
+	if (*v < FPZERO || *u + *v > FPONE)
+		return 0;
+
+	/* calculate t, ray intersects triangle */
+	*t = FPMUL(FIXED_DOT(edge2, qvec), inv_det);
 
 	return 1;
 }
