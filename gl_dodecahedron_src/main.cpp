@@ -422,12 +422,12 @@ void drawDodecahedron()
 
 
 			//Count intersection with triangle
-			double orig[3] = {0, 0, 0};
-			double dir[3] = {line_dir.x, line_dir.y, line_dir.z};
-			double vert0[3] = {tr.p0.x, tr.p0.y, tr.p0.z};
-			double vert1[3] = {tr.p1.x, tr.p1.y, tr.p1.z};
-			double vert2[3] = {tr.p2.x, tr.p2.y, tr.p2.z};
-			double t, u, v;
+			float orig[3] = {0, 0, 0};
+			float dir[3] = {line_dir.x, line_dir.y, line_dir.z};
+			float vert0[3] = {tr.p0.x, tr.p0.y, tr.p0.z};
+			float vert1[3] = {tr.p1.x, tr.p1.y, tr.p1.z};
+			float vert2[3] = {tr.p2.x, tr.p2.y, tr.p2.z};
+			float t, u, v;
 			if (intersect_triangle(orig, dir,
 								   vert0, vert1, vert2,
 								   &t, &u, &v) && t > 0) {
