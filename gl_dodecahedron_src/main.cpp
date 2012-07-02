@@ -73,6 +73,8 @@ static int drawMode = 0;
 static int maxVertices;
 static int maxIndices;
 
+#define pi 3.14159265358
+
 struct point
 {
 	GLfloat x;
@@ -303,7 +305,16 @@ static GLbyte dod_faces[12*3*3];
 
 void drawDodecahedron()
 {
-	point line_dir = {-1.1, 2, -1.1};
+	float d = cameraDistance;
+	float alpha = cameraAngleY*pi/180;
+	float beta = cameraAngleX*pi/180;
+
+	float t = d*cos(alpha);
+	float y = d*sin(alpha);
+	float x = t*cos(beta);
+	float z = t*sin(beta);
+
+	point line_dir = {x, y, z};
 
 	//XXX
 	static int s_inited = 0;
