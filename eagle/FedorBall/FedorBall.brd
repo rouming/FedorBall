@@ -1592,9 +1592,9 @@ design rules under a new name.</description>
 <attribute name="MF" value="" x="53.34" y="6.35" size="1.778" layer="28" rot="MR270" display="off"/>
 <attribute name="OC_FARNELL" value="9171142" x="53.34" y="6.35" size="1.778" layer="28" rot="MR270" display="off"/>
 </element>
-<element name="C4" library="rcl" package="C050-024X044" value="" x="57.15" y="43.18" rot="MR270"/>
-<element name="C5" library="rcl" package="C050-024X044" value="100n" x="30.48" y="49.53" rot="MR270"/>
-<element name="R1" library="rcl" package="0207/10" value="10k" x="66.04" y="44.45" rot="MR180"/>
+<element name="C4" library="rcl" package="C050-024X044" value="10u" x="57.15" y="43.18" rot="MR270"/>
+<element name="C5" library="rcl" package="C050-024X044" value="0.1u" x="30.48" y="49.53" rot="MR270"/>
+<element name="R1" library="rcl" package="0207/10" value="100k" x="66.04" y="44.45" rot="MR180"/>
 <element name="S1" library="SparkFun" package="KSA_SEALED_TAC_SWITCH" value="" x="26.67" y="8.89" rot="MR0"/>
 <element name="IC2" library="linear" package="TO220H" value="7805T" x="10.16" y="43.18" rot="MR0"/>
 <element name="X1" library="con-molex" package="22-23-2041" value="22-23-2041" x="8.89" y="19.05" rot="MR90">
@@ -1615,7 +1615,7 @@ design rules under a new name.</description>
 <element name="R2" library="rcl" package="0207/10" value="10k" x="93.98" y="74.93" rot="MR0"/>
 <element name="R3" library="rcl" package="0207/10" value="10k" x="92.71" y="68.58" rot="MR0"/>
 <element name="R4" library="rcl" package="0207/10" value="10k" x="87.63" y="7.62" rot="MR0"/>
-<element name="SPI" library="SparkFun" package="2X5-SHROUDED" value="M05X2SHD" x="62.23" y="66.04" rot="MR180"/>
+<element name="ISP" library="SparkFun" package="2X5-SHROUDED" value="M05X2SHD" x="62.23" y="66.04" rot="MR180"/>
 <element name="LED_DRIVER" library="SparkFun" package="2X5-SHROUDED" value="M05X2SHD" x="93.98" y="54.61" rot="MR180"/>
 <element name="R5" library="rcl" package="0207/10" value="10k" x="8.89" y="10.16" rot="MR180"/>
 <element name="R6" library="rcl" package="0207/10" value="10k" x="8.89" y="3.81" rot="MR180"/>
@@ -1625,7 +1625,7 @@ design rules under a new name.</description>
 <contactref element="R1" pad="2"/>
 <contactref element="IC1" pad="30"/>
 <contactref element="IC1" pad="10"/>
-<contactref element="SPI" pad="2"/>
+<contactref element="ISP" pad="2"/>
 <contactref element="C8" pad="1"/>
 <contactref element="IC2" pad="3"/>
 <contactref element="C7" pad="1"/>
@@ -1654,8 +1654,8 @@ design rules under a new name.</description>
 <contactref element="IC1" pad="31"/>
 <contactref element="IC1" pad="11"/>
 <contactref element="S1" pad="P$1"/>
-<contactref element="SPI" pad="10"/>
-<contactref element="SPI" pad="8"/>
+<contactref element="ISP" pad="10"/>
+<contactref element="ISP" pad="8"/>
 <contactref element="IC2" pad="2"/>
 <contactref element="C6" pad="2"/>
 <contactref element="C7" pad="2"/>
@@ -1683,21 +1683,21 @@ design rules under a new name.</description>
 <signal name="N$5">
 <contactref element="IC1" pad="6"/>
 <contactref element="R4" pad="2"/>
-<contactref element="SPI" pad="1"/>
+<contactref element="ISP" pad="1"/>
 <wire x1="82.55" y1="7.62" x2="60.96" y2="60.96" width="0" layer="19" extent="1-1"/>
 <wire x1="50.8" y1="57.15" x2="60.96" y2="60.96" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="N$7">
 <contactref element="IC1" pad="8"/>
 <contactref element="R2" pad="2"/>
-<contactref element="SPI" pad="7"/>
+<contactref element="ISP" pad="7"/>
 <wire x1="88.9" y1="74.93" x2="60.96" y2="68.58" width="0" layer="19" extent="1-1"/>
 <wire x1="50.8" y1="52.07" x2="88.9" y2="74.93" width="0" layer="19" extent="1-1"/>
 </signal>
 <signal name="N$8">
 <contactref element="IC1" pad="7"/>
 <contactref element="R3" pad="2"/>
-<contactref element="SPI" pad="9"/>
+<contactref element="ISP" pad="9"/>
 <wire x1="87.63" y1="68.58" x2="60.96" y2="71.12" width="0" layer="19" extent="1-1"/>
 <wire x1="50.8" y1="54.61" x2="87.63" y2="68.58" width="0" layer="19" extent="1-1"/>
 </signal>
@@ -1706,7 +1706,7 @@ design rules under a new name.</description>
 <contactref element="C4" pad="1"/>
 <contactref element="IC1" pad="9"/>
 <contactref element="S1" pad="P$3"/>
-<contactref element="SPI" pad="5"/>
+<contactref element="ISP" pad="5"/>
 <wire x1="60.96" y1="44.45" x2="57.15" y2="45.72" width="0" layer="19" extent="1-1"/>
 <wire x1="50.8" y1="49.53" x2="57.15" y2="45.72" width="0" layer="19" extent="1-1"/>
 <wire x1="30.48" y1="6.35" x2="50.8" y2="49.53" width="0" layer="19" extent="1-1"/>
@@ -1735,17 +1735,6 @@ design rules under a new name.</description>
 </signal>
 <signal name="N$16">
 <contactref element="IC1" pad="40"/>
-</signal>
-<signal name="VCC">
-<contactref element="IC2" pad="1"/>
-<contactref element="C6" pad="1"/>
-<wire x1="12.7" y1="33.02" x2="82.55" y2="38.1" width="0" layer="19" extent="1-1"/>
-</signal>
-<signal name="IN2">
-<contactref element="X1" pad="3"/>
-</signal>
-<signal name="IN1">
-<contactref element="X1" pad="4"/>
 </signal>
 <signal name="SCL">
 <contactref element="X2" pad="1"/>
@@ -1798,6 +1787,21 @@ design rules under a new name.</description>
 <contactref element="LED_DRIVER" pad="7"/>
 <contactref element="IC1" pad="5"/>
 <wire x1="92.71" y1="57.15" x2="50.8" y2="59.69" width="0" layer="19" extent="1-1"/>
+</signal>
+<signal name="VCC">
+<contactref element="IC2" pad="1"/>
+<contactref element="C6" pad="1"/>
+<wire x1="12.7" y1="33.02" x2="82.55" y2="38.1" width="0" layer="19" extent="1-1"/>
+</signal>
+<signal name="INT1">
+<contactref element="IC1" pad="16"/>
+<contactref element="X1" pad="3"/>
+<wire x1="8.89" y1="20.32" x2="50.8" y2="31.75" width="0" layer="19" extent="1-1"/>
+</signal>
+<signal name="INT0">
+<contactref element="IC1" pad="17"/>
+<contactref element="X1" pad="4"/>
+<wire x1="8.89" y1="22.86" x2="50.8" y2="29.21" width="0" layer="19" extent="1-1"/>
 </signal>
 </signals>
 </board>
