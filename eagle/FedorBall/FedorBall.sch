@@ -7317,44 +7317,44 @@ In this library the device names are the same as the pin names of the symbols, t
 </net>
 <net name="BLANK" class="0">
 <segment>
-<pinref part="IC1" gate="G$1" pin="(AIN0/INT2)PB2"/>
-<wire x1="15.24" y1="2.54" x2="27.94" y2="2.54" width="0.1524" layer="91"/>
-<junction x="27.94" y="2.54"/>
-<label x="17.78" y="2.54" size="1.778" layer="95"/>
-</segment>
-<segment>
 <pinref part="LED_DRIVER" gate="G$1" pin="6"/>
 <wire x1="83.82" y1="-20.32" x2="93.98" y2="-20.32" width="0.1524" layer="91"/>
 <junction x="93.98" y="-20.32"/>
 <label x="83.82" y="-20.32" size="1.778" layer="95"/>
 </segment>
+<segment>
+<pinref part="IC1" gate="G$1" pin="(OC1B)PD4"/>
+<wire x1="15.24" y1="-38.1" x2="25.4" y2="-38.1" width="0.1524" layer="91"/>
+<junction x="25.4" y="-38.1"/>
+<label x="17.78" y="-38.1" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="GSCLK" class="0">
-<segment>
-<pinref part="IC1" gate="G$1" pin="(AIN1/OC0)PB3"/>
-<wire x1="15.24" y1="5.08" x2="27.94" y2="5.08" width="0.1524" layer="91"/>
-<junction x="27.94" y="5.08"/>
-<label x="17.78" y="5.08" size="1.778" layer="95"/>
-</segment>
 <segment>
 <pinref part="LED_DRIVER" gate="G$1" pin="7"/>
 <wire x1="68.58" y1="-22.86" x2="60.96" y2="-22.86" width="0.1524" layer="91"/>
 <junction x="60.96" y="-22.86"/>
 <label x="63.5" y="-22.86" size="1.778" layer="95"/>
 </segment>
+<segment>
+<pinref part="IC1" gate="G$1" pin="(OC2)PD7"/>
+<wire x1="15.24" y1="-30.48" x2="25.4" y2="-30.48" width="0.1524" layer="91"/>
+<junction x="25.4" y="-30.48"/>
+<label x="17.78" y="-30.48" size="1.778" layer="95"/>
+</segment>
 </net>
 <net name="VPRG" class="0">
-<segment>
-<pinref part="IC1" gate="G$1" pin="(T1)PB1"/>
-<wire x1="15.24" y1="0" x2="27.94" y2="0" width="0.1524" layer="91"/>
-<junction x="27.94" y="0"/>
-<label x="17.78" y="0" size="1.778" layer="95"/>
-</segment>
 <segment>
 <pinref part="LED_DRIVER" gate="G$1" pin="5"/>
 <wire x1="68.58" y1="-20.32" x2="60.96" y2="-20.32" width="0.1524" layer="91"/>
 <junction x="60.96" y="-20.32"/>
 <label x="63.5" y="-20.32" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="IC1" gate="G$1" pin="(ICP)PD6"/>
+<wire x1="15.24" y1="-33.02" x2="25.4" y2="-33.02" width="0.1524" layer="91"/>
+<junction x="25.4" y="-33.02"/>
+<label x="17.78" y="-33.02" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="VCC" class="0">
@@ -7399,16 +7399,16 @@ In this library the device names are the same as the pin names of the symbols, t
 </net>
 <net name="XLAT" class="0">
 <segment>
-<pinref part="IC1" gate="G$1" pin="(SS)PB4"/>
-<wire x1="15.24" y1="7.62" x2="27.94" y2="7.62" width="0.1524" layer="91"/>
-<junction x="27.94" y="7.62"/>
-<label x="17.78" y="7.62" size="1.778" layer="95"/>
-</segment>
-<segment>
 <pinref part="LED_DRIVER" gate="G$1" pin="3"/>
 <wire x1="68.58" y1="-17.78" x2="60.96" y2="-17.78" width="0.1524" layer="91"/>
 <junction x="60.96" y="-17.78"/>
 <label x="63.5" y="-17.78" size="1.778" layer="95"/>
+</segment>
+<segment>
+<pinref part="IC1" gate="G$1" pin="(OC1A)PD5"/>
+<wire x1="15.24" y1="-35.56" x2="25.4" y2="-35.56" width="0.1524" layer="91"/>
+<junction x="25.4" y="-35.56"/>
+<label x="17.78" y="-35.56" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="SCK_10K" class="0">
