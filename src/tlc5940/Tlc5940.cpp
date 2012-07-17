@@ -125,9 +125,9 @@ void Tlc5940::init(uint16_t initialValue)
     ICR1 = TLC_PWM_PERIOD; // see tlc_config.h
 
     /* Timer 2 - GSCLK */
-#if defined(TLC_ATMEGA_8_H)
-    TCCR2  = _BV(COM20)       // set on BOTTOM, clear on OCR2A (non-inverting),
-           | _BV(WGM21);      // output on OC2B, CTC mode with OCR2 top
+#if defined(TLC_ATMEGA_8_H) || defined(TLC_ATMEGA_16_H)
+    TCCR2  = _BV(COM20)       // toggle OC2 on compare match
+           | _BV(WGM21);      // output on OC2, CTC mode with OCR2 top
     OCR2   = TLC_GSCLK_PERIOD / 2; // see tlc_config.h
     TCCR2 |= _BV(CS20);       // no prescale, (start pwm output)
 #elif defined(TLC_TIMER3_GSCLK)
