@@ -82,6 +82,11 @@
 /* ATmega8 */
 #include "ATmega_8.h"
 
+#elif defined (__AVR_ATmega16__)
+
+/* ATmega16 */
+#include "ATmega_16.h"
+
 #elif defined (__AVR_ATmega164P__) \
    || defined (__AVR_ATmega324P__) \
    || defined (__AVR_ATmega644__)  \

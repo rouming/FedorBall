@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include "tlc_config.h"
 
-#ifdef TLC_ATMEGA_8_H
+#if defined(TLC_ATMEGA_8_H) || defined(TLC_ATMEGA_16_H)
 
 /** Enables the Timer1 Overflow interrupt, which will fire after an XLAT
     pulse */
