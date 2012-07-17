@@ -20,7 +20,7 @@ LFLAGS=-mmcu=$(MMCU)
 all: fedorball.elf
 
 fedorball.elf: main.o Tlc5940.o
-	$(CC) $(LFLAGS) main.o Tlc5940.o -o fedorball.elf
+	$(CXX) $(LFLAGS) main.o Tlc5940.o -o fedorball.elf
 
 Tlc5940.o:
 	$(CXX) $(CXXFLAGS) tlc5940/Tlc5940.cpp
