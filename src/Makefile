@@ -6,17 +6,24 @@
 # e.g. this: examples/hid-mouse/firmware/Makefile
 #
 CC=avr-gcc
+CXX=avr-g++
 MMCU=atmega16
 
 F_CLK=F_CLK=8000000UL
 F_CPU=F_CPU=8000000UL
-CFLAGS=-c -O3 -Wall -gdwarf-2 -mmcu=$(MMCU) -std=gnu99 -D$(F_CLK) -D$(F_CPU)
+FLAGS=-c -O3 -Wall -gdwarf-2 -mmcu=$(MMCU) -D$(F_CLK) -D$(F_CPU)
+
+CFLAGS=-std=gnu99 $(FLAGS)
+CXXFLAGS=$(FLAGS)
 LFLAGS=-mmcu=$(MMCU)
 
 all: fedorball.elf
 
-fedorball.elf: main.o
-	$(CC) $(LFLAGS) main.o -o fedorball.elf
+fedorball.elf: main.o Tlc5940.o
+	$(CC) $(LFLAGS) main.o Tlc5940.o -o fedorball.elf
+
+Tlc5940.o:
+	$(CXX) $(CXXFLAGS) tlc5940/Tlc5940.cpp
 
 # Flash burning
 # to avoid sudo place udev rule for USBASP as /etc/udev/rules.d/usbasp.rules:
