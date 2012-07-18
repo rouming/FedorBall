@@ -11,6 +11,9 @@
 
 int main()
 {
+	// enable iterrupts
+	sei();
+
 	Tlc5940 tlc;
 	tlc.init();
 
