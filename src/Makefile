@@ -19,8 +19,8 @@ LFLAGS=-mmcu=$(MMCU)
 
 all: fedorball.elf
 
-fedorball.elf: main.o Tlc5940.o
-	$(CXX) $(LFLAGS) main.o Tlc5940.o -o fedorball.elf
+fedorball.elf: main.o uart.o Tlc5940.o
+	$(CXX) $(LFLAGS) main.o uart.o Tlc5940.o -o fedorball.elf
 
 Tlc5940.o:
 	$(CXX) $(CXXFLAGS) tlc5940/Tlc5940.cpp
