@@ -8,6 +8,12 @@
 extern "C" {
 #endif
 
+/* Size must be 2^N */
+#define UART_RX_BUFF_SZ (1<<7)
+
+/* Size must be 2^N */
+#define UART_TX_BUFF_SZ (1<<7)
+
 /* UART RX callback called when some data is available to read */
 typedef void (*uart_rx_cb)(void* user_data);
 

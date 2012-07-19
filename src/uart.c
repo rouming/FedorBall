@@ -8,6 +8,15 @@
 #include <stdio.h>
 
 #include "uart.h"
+#include "ring_buffer.h"
+
+/*************************************************************************/
+
+static unsigned char s_rx_buffer[UART_RX_BUFF_SZ];
+static unsigned char s_tx_buffer[UART_TX_BUFF_SZ];
+
+static struct ring_buffer s_rx_rbuf;
+static struct ring_buffer s_tx_rbuf;
 
 /*************************************************************************/
 
@@ -38,6 +47,9 @@ void uart_init(uint16_t bauds, uart_rx_cb cb, void* user_data)
 {
 	(void)cb;
 	(void)user_data;
+
+	ring_buffer_init(&s_rx_rbuf, s_rx_buffer, UART_RX_BUFF_SZ);
+	ring_buffer_init(&s_tx_rbuf, s_tx_buffer, UART_TX_BUFF_SZ);
 
 	uint16_t ubrr = F_CLK/16/bauds - 1;
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
