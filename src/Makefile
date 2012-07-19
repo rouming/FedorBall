@@ -25,6 +25,10 @@ fedorball.elf: main.o Tlc5940.o
 Tlc5940.o:
 	$(CXX) $(CXXFLAGS) tlc5940/Tlc5940.cpp
 
+
+tty:
+	sudo stty -F /dev/ttyUSB0 cs8 9600 ignbrk -brkint -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
+
 # Flash burning
 # to avoid sudo place udev rule for USBASP as /etc/udev/rules.d/usbasp.rules:
 # SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="users", MODE="0666"
