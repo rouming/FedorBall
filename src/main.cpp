@@ -6,11 +6,35 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
+#include <string.h>
 
 #include "tlc5940/Tlc5940.h"
 
+#include "uart.h"
+#include "logging.h"
+
+/* Forward RX to TX */
+void uart_rx(void* rx_cb_data)
+{
+	(void)rx_cb_data;
+
+	void *rx_p, *tx_p;
+	uint32_t rx_sz, tx_sz, sz;
+	uart_rx_ptr(&rx_p, &rx_sz);
+	uart_tx_ptr(&tx_p, &tx_sz);
+	sz = (rx_sz > tx_sz ? tx_sz : rx_sz);
+	if (sz == 0)
+		return;
+	memcpy(tx_p, rx_p, sz);
+	uart_rx_advance(sz);
+	uart_tx_advance(sz);
+}
+
 int main()
 {
+	/* Init UART */
+	uart_init(9600, uart_rx, NULL);
+
 	// enable iterrupts
 	sei();
 
@@ -51,7 +75,9 @@ int main()
 			   LEDs will actually change. */
 			tlc.update();
 
-			_delay_ms(75);
+			_delay_ms(200);
+
+			LOG("!!! UPDATE TLC");
 		}
 	}
 
