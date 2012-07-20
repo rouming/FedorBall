@@ -86,8 +86,8 @@ void uart_init(uint16_t bauds, uart_rx_cb cb, void* user_data)
 		UBRRL = (unsigned char)ubrr;
 		/* Enable receiver, transmitter and RX interrupt */
 		UCSRB = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE);
-		/* Set frame format: 8data, 2stop bit */
-		UCSRC = (1<<URSEL)|(1<<USBS)|(3<<UCSZ0);
+		/* Set frame format: 8data, 1stop bit */
+		UCSRC = (1<<URSEL)|(3<<UCSZ0);
 	}
 }
 
