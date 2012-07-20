@@ -9,9 +9,8 @@ CC=avr-gcc
 CXX=avr-g++
 MMCU=atmega16
 
-F_CLK=F_CLK=8000000UL
-F_CPU=F_CPU=8000000UL
-FLAGS=-c -O3 -Wall -gdwarf-2 -mmcu=$(MMCU) -D$(F_CLK) -D$(F_CPU)
+CLK=16000000UL
+FLAGS=-c -O3 -Wall -gdwarf-2 -mmcu=$(MMCU) -DF_CLK=$(CLK) -DF_CPU=$(CLK)
 
 CFLAGS=-std=gnu99 $(FLAGS)
 CXXFLAGS=$(FLAGS)
@@ -45,9 +44,10 @@ flash: all
 #   LOW FUSE
 # 0b11100001 (0xE1) - shipped
 # 0b11100100 (0xE4) - 8MHz internal oscillator (CKSEL3..0 = 0100)
+# 0b11100100 (0xE0) -       external generator (CKSEL3..0 = 0000)
 #
 # avrdude -c usbasp -p m16 -U hfuse:w:0xD9:m
-# avrdude -c usbasp -p m16 -U lfuse:w:0xE4:m
+# avrdude -c usbasp -p m16 -U lfuse:w:0xE0:m
 
 fuse:
 	avrdude -c usbasp -p m16 -U lfuse:r:lfuse.txt:r
