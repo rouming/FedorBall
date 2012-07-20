@@ -14,7 +14,7 @@
 #include "logging.h"
 
 /* Forward RX to TX */
-void uart_rx(void* rx_cb_data)
+void uart_rx_to_tx(void* rx_cb_data)
 {
 	(void)rx_cb_data;
 
@@ -33,7 +33,7 @@ void uart_rx(void* rx_cb_data)
 int main()
 {
 	/* Init UART */
-	uart_init(9600, uart_rx, NULL);
+	uart_init(9600, uart_rx_to_tx, NULL);
 
 	// enable iterrupts
 	sei();
