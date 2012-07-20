@@ -31,13 +31,10 @@ int main()
 	struct termios options;
 	tcgetattr(fd, &options);
 
-	options.c_iflag &= ~ISTRIP;
-	options.c_oflag &= ~ISTRIP;
+	//BINARY MODE!
+	//stty -F /dev/ttyUSB0 cs8 115200 ignbrk -brkint -icrnl -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
 
-	options.c_iflag |= IGNPAR;
-	//options.c_oflag |= IGNPAR;
-
-	options.c_cflag &= ~(PARENB|PARODD);
+	options.c_cflag &= ~PARENB;
 	options.c_cflag &= ~CSTOPB;
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= CS8;
