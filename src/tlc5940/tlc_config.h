@@ -91,7 +91,9 @@
     \f$\displaystyle TLC\_PWM\_PERIOD =
        \frac{(TLC\_GSCLK\_PERIOD + 1) * 4096}{2} \f$
     \note The default of 8192 means the PWM frequency is 976.5625Hz */
-#define TLC_PWM_PERIOD    8192
+//#define TLC_PWM_PERIOD    8192
+// We use external 16MHz crystal
+#define TLC_PWM_PERIOD    2048
 
 /** Determines how long each period GSCLK is.
     This is related to TLC_PWM_PERIOD:
@@ -107,6 +109,10 @@
     \note VPRG to GND inputs grayscale data, VPRG to Vcc inputs dot-correction
           data */
 #define VPRG_ENABLED    1
+
+/** If disabled we assume that GSCLK pin of TLC is connected to some
+	external generator or other MC */
+#define GSCLK_ENABLED 0
 
 /** Enables/disables XERR (TLC pin 16) functionality to check for shorted/broken
     LEDs
