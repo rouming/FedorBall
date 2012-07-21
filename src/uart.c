@@ -53,6 +53,8 @@ ISR(USART_UDRE_vect)
 {
 	/* Ring buffer is empty */
 	if (!ring_buffer_used_size(&s_tx_rbuf)) {
+		/* Reset TX buffer */
+		ring_buffer_reset(&s_tx_rbuf);
 		/* Turn off UDRE interrupt */
 		UCSRB &= ~(1 << UDRIE);
 		return;
