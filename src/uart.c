@@ -12,9 +12,6 @@
 
 /*************************************************************************/
 
-static unsigned char s_rx_buffer[UART_RX_BUFF_SZ];
-static unsigned char s_tx_buffer[UART_TX_BUFF_SZ];
-
 static struct ring_buffer s_rx_rbuf;
 static struct ring_buffer s_tx_rbuf;
 
@@ -71,7 +68,10 @@ ISR(USART_UDRE_vect)
 
 /*************************************************************************/
 
-void uart_init(uint16_t bauds, uart_rx_cb cb, void* user_data)
+void uart_init(uint16_t bauds,
+			   uint8_t* rx_buff, uint32_t rx_sz,
+			   uint8_t* tx_buff, uint32_t tx_sz,
+			   uart_rx_cb cb, void* user_data)
 {
 	uint16_t ubrr = F_CLK/16/bauds - 1;
 
@@ -83,8 +83,8 @@ void uart_init(uint16_t bauds, uart_rx_cb cb, void* user_data)
 	s_uart_ctx.rx_cb_data = user_data;
 
 	/* Init ring buffers */
-	ring_buffer_init(&s_rx_rbuf, s_rx_buffer, UART_RX_BUFF_SZ);
-	ring_buffer_init(&s_tx_rbuf, s_tx_buffer, UART_TX_BUFF_SZ);
+	ring_buffer_init(&s_rx_rbuf, rx_buff, rx_sz);
+	ring_buffer_init(&s_tx_rbuf, tx_buff, tx_sz);
 
 	/* Set baud rate */
 	UBRRH = (unsigned char)(ubrr>>8);

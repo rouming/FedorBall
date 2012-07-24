@@ -13,6 +13,14 @@
 #include "uart.h"
 #include "logging.h"
 
+/* Size must be 2^N */
+#define UART_RX_BUFF_SZ (1<<2)
+/* Size must be 2^N */
+#define UART_TX_BUFF_SZ (1<<8)
+
+static unsigned char s_uart_rx_buff[UART_RX_BUFF_SZ];
+static unsigned char s_uart_tx_buff[UART_TX_BUFF_SZ];
+
 /* Forward RX to TX */
 void uart_rx_to_tx(void* rx_cb_data)
 {
@@ -33,7 +41,8 @@ void uart_rx_to_tx(void* rx_cb_data)
 int main()
 {
 	/* Init UART */
-	uart_init(9600, uart_rx_to_tx, NULL);
+	uart_init(9600, s_uart_rx_buff, UART_RX_BUFF_SZ,
+			  s_uart_tx_buff, UART_TX_BUFF_SZ, uart_rx_to_tx, NULL);
 
 	// enable iterrupts
 	sei();

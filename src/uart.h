@@ -8,19 +8,14 @@
 extern "C" {
 #endif
 
-/* Size must be 2^N */
-#define UART_RX_BUFF_SZ (1<<7)
-
-/* Size must be 2^N */
-#define UART_TX_BUFF_SZ (1<<7)
-
 /* UART RX callback called when some data is available to read */
 typedef void (*uart_rx_cb)(void* user_data);
 
-/* Init UART with baud rate */
+/* Init UART with baud rate. Sizes must be power of two */
 void uart_init(uint16_t bauds,
-			   uart_rx_cb cb,
-			   void* user_data);
+			   uint8_t* rx_buff, uint32_t rx_sz,
+			   uint8_t* tx_buff, uint32_t tx_sz,
+			   uart_rx_cb cb, void* user_data);
 
 /* Get UART RX buffer with its size available to read */
 void uart_rx_ptr(void** ptr, uint32_t* sz);
