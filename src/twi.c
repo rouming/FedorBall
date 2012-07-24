@@ -205,7 +205,7 @@ ISR(TWI_vect)
 			0<<TWSTA|
 			0<<TWSTO|
 			1<<TWINT|
-			send_nack<<TWEA|
+			(!send_nack)<<TWEA|
 			1<<TWEN|
 			1<<TWIE;
 		break;
@@ -259,7 +259,7 @@ ISR(TWI_vect)
 			0<<TWSTA|
 			0<<TWSTO|
 			1<<TWINT|
-			send_nack<<TWEA|
+			(!send_nack)<<TWEA|
 			1<<TWEN|
 			1<<TWIE;
 
