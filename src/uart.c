@@ -74,23 +74,25 @@ ISR(USART_UDRE_vect)
 void uart_init(uint16_t bauds, uart_rx_cb cb, void* user_data)
 {
 	uint16_t ubrr = F_CLK/16/bauds - 1;
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		/* Init UART ctx */
-		s_uart_ctx.rx_cb = cb;
-		s_uart_ctx.rx_cb_data = user_data;
 
-		/* Init ring buffers */
-		ring_buffer_init(&s_rx_rbuf, s_rx_buffer, UART_RX_BUFF_SZ);
-		ring_buffer_init(&s_tx_rbuf, s_tx_buffer, UART_TX_BUFF_SZ);
+	/* Disable uart rx/tx first */
+	UCSRB = 0;
 
-		/* Set baud rate */
-		UBRRH = (unsigned char)(ubrr>>8);
-		UBRRL = (unsigned char)ubrr;
-		/* Enable receiver, transmitter and RX interrupt */
-		UCSRB = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE);
-		/* Set frame format: 8data, 1stop bit */
-		UCSRC = (1<<URSEL)|(3<<UCSZ0);
-	}
+	/* Init UART ctx */
+	s_uart_ctx.rx_cb = cb;
+	s_uart_ctx.rx_cb_data = user_data;
+
+	/* Init ring buffers */
+	ring_buffer_init(&s_rx_rbuf, s_rx_buffer, UART_RX_BUFF_SZ);
+	ring_buffer_init(&s_tx_rbuf, s_tx_buffer, UART_TX_BUFF_SZ);
+
+	/* Set baud rate */
+	UBRRH = (unsigned char)(ubrr>>8);
+	UBRRL = (unsigned char)ubrr;
+	/* Set frame format: 8data, 1stop bit */
+	UCSRC = (1<<URSEL)|(3<<UCSZ0);
+	/* Enable receiver, transmitter and RX interrupt */
+	UCSRB = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE);
 }
 
 void uart_rx_ptr(void** p1, uint32_t* sz1)
