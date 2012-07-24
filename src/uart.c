@@ -148,6 +148,10 @@ uint16_t uart_printf(const char* fmt, ...)
 
 	uart_tx_ptr((void**)&p, &sz);
 
+	/* What can we do? */
+	if (!sz)
+		return 0;
+
 	va_start(args, fmt);
 	sz = vsnprintf(p, sz, fmt, args);
 	va_end(args);
