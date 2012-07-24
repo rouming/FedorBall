@@ -10,7 +10,9 @@
 
 #include "tlc5940/Tlc5940.h"
 
+#include "mma7455.h"
 #include "uart.h"
+#include "twi.h"
 #include "logging.h"
 
 /* Size must be 2^N */
@@ -38,14 +40,83 @@ void uart_rx_to_tx(void* rx_cb_data)
 	uart_tx_advance(sz);
 }
 
+void mma7455_test()
+{
+	int error;
+	uint8_t c;
+
+	// Initialize the MMA7455, and set the offset.
+	error = MMA7455_init();
+	LOG("Freescale MMA7455 accelerometer, inited=%s\n",
+		(error == 0 ? "OK" : "ERR"));
+
+	// Read the Status Register
+	MMA7455_read(MMA7455_STATUS, &c, 1);
+
+	LOG("STATUS : %x\n", c);
+
+	// Read the "Who am I" value
+	MMA7455_read(MMA7455_WHOAMI, &c, 1);
+
+	LOG("WHOAMI: %x\n", c);
+
+	// Read the optional temperature output value (I always read zero)
+	MMA7455_read(MMA7455_TOUT, &c, 1);
+
+	LOG("TOUT: %d\n", c);
+
+	Tlc5940 tlc;
+	tlc.init();
+
+	while (1) {
+		int x,y,z, error;
+
+		// The function MMA7455_xyz returns the 'g'-force
+		// as an integer in 64 per 'g'.
+
+		// set x,y,z to zero (they are not written in case of an error).
+		x = y = z = 0;
+		error = MMA7455_xyz(&x, &y, &z); // get the accelerometer values.
+
+		/*
+		double dx,dy,dz;
+		dx = (double) x / 64.0;          // calculate the 'g' values.
+		dy = (double) y / 64.0;
+		dz = (double) z / 64.0;
+		*/
+
+		int led = (int)((float)y/64.0f*15.0f + 15.0f/2.0f);
+
+		if (error != 0)
+			LOG("xyz err: %x\n", error);
+		else
+			LOG("xyz g-force: x=%d y=%d z=%d, led=%d\n", x, y, z, led);
+
+		tlc.clear();
+		tlc.set(led, 4095);
+		tlc.update();
+
+		_delay_ms(1000);
+	}
+}
+
 int main()
 {
 	/* Init UART */
 	uart_init(9600, s_uart_rx_buff, UART_RX_BUFF_SZ,
 			  s_uart_tx_buff, UART_TX_BUFF_SZ, uart_rx_to_tx, NULL);
 
+	/* Init TWI(I2C) */
+	twi_init(TWI_FREQ);
+
 	// enable iterrupts
 	sei();
+
+	mma7455_test();
+
+	return 0;
+
+	//////
 
 	Tlc5940 tlc;
 	tlc.init();
