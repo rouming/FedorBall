@@ -28,6 +28,9 @@ Tlc5940.o:
 tty:
 	sudo stty -F /dev/ttyUSB0 cs8 9600 ignbrk -brkint -imaxbel -opost -onlcr -isig -icanon -iexten -echo -echoe -echok -echoctl -echoke noflsh -ixon -crtscts
 
+picocom:
+	sudo picocom --imap lfcrlf -b 9600 -d 8 -p n /dev/ttyUSB0
+
 # Flash burning
 # to avoid sudo place udev rule for USBASP as /etc/udev/rules.d/usbasp.rules:
 # SUBSYSTEMS=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="users", MODE="0666"
