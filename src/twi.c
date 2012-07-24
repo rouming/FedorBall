@@ -14,44 +14,19 @@
 
 /*************************************************************************/
 
-typedef enum
-{
-	twi_stop       = 0,
-	twi_send       = 1,
-	twi_recv       = 2,
-	twi_send_recv  = 3
-
-} twi_state;
-
 static struct
 {
-	twi_event_cb ev_cb;
-	void* ev_data;
-	twi_state curr_st;
 	uint8_t slave_addr_set;
-	uint8_t op_slave_addr;
 
-	uint8_t* tx_ptr;
-	uint32_t tx_len;
-	uint32_t tx_len_init;
-
-	uint8_t* rx_ptr;
-	uint32_t rx_len;
-	uint32_t rx_len_init;
+	struct {
+		twi_iov* iov;
+		uint32_t iov_cnt;
+		uint32_t iov_ind;
+		twi_complete_cb cb;
+		void* data;
+	} io;
 
 } s_twi_state;
-
-#define TWI_INIT_OP(st_, sl_addr_, tx_ptr_, tx_sz_, rx_ptr_, rx_sz_)	\
-	do {																\
-		s_twi_state.curr_st = st_;										\
-		s_twi_state.tx_ptr = (uint8_t*)tx_ptr_;							\
-		s_twi_state.tx_len = tx_sz_;									\
-		s_twi_state.tx_len_init = tx_sz_;								\
-		s_twi_state.rx_ptr = (uint8_t*)rx_ptr_;							\
-		s_twi_state.rx_len = rx_sz_;									\
-		s_twi_state.rx_len_init = rx_sz_;								\
-		s_twi_state.op_slave_addr = (sl_addr_ << 1);					\
-	} while(0)
 
 /*************************************************************************/
 
@@ -68,10 +43,10 @@ ISR(TWI_vect)
 			1<<TWEN|
 			1<<TWIE;
 
-		s_twi_state.curr_st = twi_stop;
+		s_twi_state.io.iov_cnt = 0;
 
-		if (s_twi_state.ev_cb)
-			s_twi_state.ev_cb(twi_bus_fail, s_twi_state.ev_data);
+		if (s_twi_state.io.cb)
+			s_twi_state.io.cb(twi_bus_fail, s_twi_state.io.data);
 		break;
 	}
 
@@ -81,9 +56,8 @@ ISR(TWI_vect)
 
 	/* Set slave addr with lsb wr/rd bit on START */
 	case TW_START: {
-		TWDR = (s_twi_state.curr_st == twi_recv ?
-				s_twi_state.op_slave_addr | 0x01 :
-				s_twi_state.op_slave_addr);
+		twi_iov* iov = &s_twi_state.io.iov[s_twi_state.io.iov_ind];
+		TWDR = (iov->dev_addr << 1) | iov->op;
 		TWCR =
 			0<<TWSTA|
 			0<<TWSTO|
@@ -95,7 +69,8 @@ ISR(TWI_vect)
 	}
 	/* Set slave addr with lsb _rd_ bit on REPEATED START */
 	case TW_REP_START: {
-		TWDR = s_twi_state.op_slave_addr | 0x01;
+		twi_iov* iov = &s_twi_state.io.iov[s_twi_state.io.iov_ind];
+		TWDR = (iov->dev_addr << 1) | iov->op;
 		TWCR =
 			0<<TWSTA|
 			0<<TWSTO|
@@ -107,11 +82,8 @@ ISR(TWI_vect)
 	}
 	/* Start data send on acked START of write op */
 	case TW_MT_SLA_ACK: {
-		TWDR = *s_twi_state.tx_ptr;
-
-		++s_twi_state.tx_ptr;
-		--s_twi_state.tx_len;
-
+		twi_iov* iov = &s_twi_state.io.iov[s_twi_state.io.iov_ind];
+		TWDR = iov->ptr[iov->done++];
 		TWCR =
 			0<<TWSTA|
 			0<<TWSTO|
@@ -131,24 +103,40 @@ ISR(TWI_vect)
 			1<<TWEN|
 			1<<TWIE;
 
-		s_twi_state.curr_st = twi_stop;
+		s_twi_state.io.iov_cnt = 0;
 
-		if (s_twi_state.ev_cb)
-			s_twi_state.ev_cb(twi_mt_sla_nack, s_twi_state.ev_data);
+		if (s_twi_state.io.cb)
+			s_twi_state.io.cb(twi_mt_sla_nack, s_twi_state.io.data);
 		break;
 	}
 	/* Ack on byte already sent, continue sending data or send stop */
 	case TW_MT_DATA_ACK: {
+		twi_iov* iov = &s_twi_state.io.iov[s_twi_state.io.iov_ind];
+		/* Send restart in case of next valid iov with different
+		   dev addr or op */
 		uint8_t send_restart = 0;
-		uint8_t send_stop = !!s_twi_state.tx_len;
+		/* Send stop in case of no bytes and last iov */
+		uint8_t send_stop =
+			!(iov->len - iov->done) &&
+			/* Advance current iov index */
+			s_twi_state.io.iov_cnt == ++s_twi_state.io.iov_ind;
 		if (!send_stop) {
-			TWDR = *s_twi_state.tx_ptr;
-
-			++s_twi_state.tx_ptr;
-			--s_twi_state.tx_len;
+			/* Continue sending data for current iov */
+			if (iov->len - iov->done)
+				TWDR = iov->ptr[iov->done++];
+			/* Get next iov */
+			else {
+				twi_iov* next_iov =
+					&s_twi_state.io.iov[s_twi_state.io.iov_ind];
+				/* If op or addr differ send restart */
+				if (next_iov->op != iov->op ||
+					next_iov->dev_addr != iov->dev_addr)
+					send_restart = 1;
+				/* Continue sending data for next iov */
+				else
+					TWDR = next_iov->ptr[next_iov->done++];
+			}
 		}
-		else
-			send_restart = (s_twi_state.curr_st == twi_send_recv);
 
 		TWCR =
 			send_restart<<TWSTA|
@@ -159,14 +147,14 @@ ISR(TWI_vect)
 			1<<TWIE;
 
 		if (send_stop) {
-			s_twi_state.curr_st = twi_stop;
+			s_twi_state.io.iov_cnt = 0;
 
-			if (s_twi_state.ev_cb)
-				s_twi_state.ev_cb(twi_ok, s_twi_state.ev_data);
+			if (s_twi_state.io.cb)
+				s_twi_state.io.cb(twi_ok, s_twi_state.io.data);
 		}
 		break;
 	}
-	/* Nack on byte already send, send stop */
+	/* Nack on byte already sent, send stop */
 	case TW_MT_DATA_NACK: {
 		TWCR =
 			0<<TWSTA|
@@ -176,23 +164,18 @@ ISR(TWI_vect)
 			1<<TWEN|
 			1<<TWIE;
 
-		s_twi_state.curr_st = twi_stop;
+		s_twi_state.io.iov_cnt = 0;
 
-		if (s_twi_state.ev_cb)
-			s_twi_state.ev_cb(twi_mt_data_nack, s_twi_state.ev_data);
+		if (s_twi_state.io.cb)
+			s_twi_state.io.cb(twi_mt_data_nack, s_twi_state.io.data);
 		break;
 	}
 	/* Arbitrage lost for master transmit/receive */
 	case TW_MT_ARB_LOST:
   /*case TW_MR_ARB_LOST: */ {
-		/* Reset tx pointer */
-		s_twi_state.tx_ptr -=
-			(s_twi_state.tx_len_init - s_twi_state.tx_len);
-		s_twi_state.tx_len = s_twi_state.tx_len_init;
-		/* Reset rx pointer */
-		s_twi_state.rx_ptr -=
-			(s_twi_state.rx_len_init - s_twi_state.rx_len);
-		s_twi_state.rx_len = s_twi_state.rx_len_init;
+		/* Reset current iov */
+		twi_iov* iov = &s_twi_state.io.iov[s_twi_state.io.iov_ind];
+		iov->done = 0;
 
 		/* Retry start */
 		TWCR =
@@ -206,11 +189,23 @@ ISR(TWI_vect)
 	}
 	/* Start data receive on acked START of read op */
 	case TW_MR_SLA_ACK: {
+		twi_iov* iov = &s_twi_state.io.iov[s_twi_state.io.iov_ind];
+		twi_iov* next_iov =
+			(s_twi_state.io.iov_cnt == s_twi_state.io.iov_ind + 1 ?
+			 NULL :
+			 iov + 1);
+		/* NACK will be sent on single byte and different next iov */
+		uint8_t send_nack =
+			(iov->len == 1) &&
+			(!next_iov ||
+			 next_iov->op != iov->op ||
+			 next_iov->dev_addr != iov->dev_addr);
+
 		TWCR =
 			0<<TWSTA|
 			0<<TWSTO|
 			1<<TWINT|
-			(s_twi_state.rx_len > 1)<<TWEA| /* send nack on single byte */
+			send_nack<<TWEA|
 			1<<TWEN|
 			1<<TWIE;
 		break;
@@ -225,20 +220,40 @@ ISR(TWI_vect)
 			1<<TWEN|
 			1<<TWIE;
 
-		s_twi_state.curr_st = twi_stop;
+		s_twi_state.io.iov_cnt = 0;
 
-		if (s_twi_state.ev_cb)
-			s_twi_state.ev_cb(twi_mr_sla_nack, s_twi_state.ev_data);
+		if (s_twi_state.io.cb)
+			s_twi_state.io.cb(twi_mr_sla_nack, s_twi_state.io.data);
 		break;
 	}
 	/* Store already read byte */
 	case TW_MR_DATA_ACK: {
-		*s_twi_state.rx_ptr = TWDR;
+		twi_iov* iov = &s_twi_state.io.iov[s_twi_state.io.iov_ind];
+		twi_iov* next_iov =
+			(s_twi_state.io.iov_cnt == s_twi_state.io.iov_ind + 1 ?
+			 NULL :
+			 iov + 1);
 
-		++s_twi_state.rx_ptr;
-		--s_twi_state.rx_len;
+		iov->ptr[iov->done++] = TWDR;
 
-		uint8_t send_nack = (s_twi_state.rx_len > 1);
+		/* Check storing of last byte. Next iov must be valid. */
+		if (iov->done == iov->len) {
+			/* Advance iov */
+			++s_twi_state.io.iov_ind;
+			/* assert(next_iov); */
+			iov = next_iov;
+			next_iov =
+				(s_twi_state.io.iov_cnt == s_twi_state.io.iov_ind + 1 ?
+				 NULL :
+				 iov + 1);
+		}
+
+		/* NACK will be sent on single byte and different next iov */
+		uint8_t send_nack =
+			(iov->len - iov->done == 1) &&
+			(!next_iov ||
+			 next_iov->op != iov->op ||
+			 next_iov->dev_addr != iov->dev_addr);
 
 		TWCR =
 			0<<TWSTA|
@@ -252,23 +267,30 @@ ISR(TWI_vect)
 	}
 	/* Receive last byte */
 	case TW_MR_DATA_NACK: {
-		*s_twi_state.rx_ptr = TWDR;
+		twi_iov* iov = &s_twi_state.io.iov[s_twi_state.io.iov_ind];
+		twi_iov* next_iov =
+			/* Advance current iov index */
+			(s_twi_state.io.iov_cnt == ++s_twi_state.io.iov_ind ?
+			 NULL :
+			 iov + 1);
 
-		++s_twi_state.rx_ptr;
-		--s_twi_state.rx_len;
+		iov->ptr[iov->done++] = TWDR;
+		/* assert(iov->done == iov->len); */
 
 		TWCR =
-			0<<TWSTA|
-			1<<TWSTO| /* send stop */
+			(!!next_iov)<<TWSTA| /* send restart if next iov is not null */
+			(!next_iov)<<TWSTO|  /* send stop if next iov is null */
 			1<<TWINT|
 			s_twi_state.slave_addr_set<<TWEA|
 			1<<TWEN|
 			1<<TWIE;
 
-		s_twi_state.curr_st = twi_stop;
+		if (!next_iov) {
+			s_twi_state.io.iov_cnt = 0;
 
-		if (s_twi_state.ev_cb)
-			s_twi_state.ev_cb(twi_ok, s_twi_state.ev_data);
+			if (s_twi_state.io.cb)
+				s_twi_state.io.cb(twi_ok, s_twi_state.io.data);
+		}
 		break;
 	}
 
@@ -284,11 +306,9 @@ ISR(TWI_vect)
 
 /*************************************************************************/
 
-twi_result twi_init(uint32_t twi_freq, twi_event_cb cb, void* data)
+twi_result twi_init(uint32_t twi_freq)
 {
 	memset(&s_twi_state, 0, sizeof(s_twi_state));
-	s_twi_state.ev_cb = cb;
-	s_twi_state.ev_data = data;
 
 	/* setup TWI and pull-up resistors */
 	TWI_PORT |= 1<<TWI_SCL|1<<TWI_SDA;
@@ -306,47 +326,21 @@ twi_result twi_listen(uint8_t slave_addr, uint8_t is_broadcast,
 {
 	//TODO:
 	(void)cb;
+	return twi_not_impl;
 
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		if (s_twi_state.curr_st != twi_stop)
-			return twi_err;
+	if (s_twi_state.io.iov_cnt)
+		return twi_busy;
 
-		s_twi_state.slave_addr_set = (slave_addr || is_broadcast);
-		if (s_twi_state.slave_addr_set) {
-			TWAR = (slave_addr << 1)|(!!is_broadcast);
+	s_twi_state.slave_addr_set = (slave_addr || is_broadcast);
+	if (s_twi_state.slave_addr_set) {
+		TWAR = (slave_addr << 1)|(!!is_broadcast);
 
-			/* Start listen to bus */
-			TWCR =
-				0<<TWSTA|
-				0<<TWSTO|
-				0<<TWINT|
-				1<<TWEA|
-				1<<TWEN|
-				1<<TWIE;
-		}
-	}
-
-	return twi_ok;
-}
-
-twi_result twi_master_send(uint8_t slave_addr, void* data, uint32_t sz)
-{
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		if (s_twi_state.curr_st != twi_stop)
-			return twi_err;
-		if (!slave_addr || slave_addr & (1<<7))
-			return twi_err;
-		if (!data || sz == 0)
-			return twi_err;
-
-		TWI_INIT_OP(twi_send, slave_addr, data, sz, NULL, 0);
-
-		/* Start op */
+		/* Start listen to bus */
 		TWCR =
-			1<<TWSTA|
+			0<<TWSTA|
 			0<<TWSTO|
-			1<<TWINT|
-			s_twi_state.slave_addr_set<<TWEA|
+			0<<TWINT|
+			1<<TWEA|
 			1<<TWEN|
 			1<<TWIE;
 	}
@@ -354,64 +348,37 @@ twi_result twi_master_send(uint8_t slave_addr, void* data, uint32_t sz)
 	return twi_ok;
 }
 
-twi_result twi_master_recv(uint8_t slave_addr, void* data, uint32_t sz)
+twi_result twi_submit_iov(twi_iov* iov, uint32_t iovcnt,
+						  twi_complete_cb cb, void* data)
 {
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		if (s_twi_state.curr_st != twi_stop)
-			return twi_err;
-		if (!slave_addr || slave_addr & (1<<7))
-			return twi_err;
-		if (!data || sz == 0)
-			return twi_err;
-
-		TWI_INIT_OP(twi_send, slave_addr, NULL, 0, data, sz);
-
-		/* Start op */
-		TWCR =
-			1<<TWSTA|
-			0<<TWSTO|
-			1<<TWINT|
-			s_twi_state.slave_addr_set<<TWEA|
-			1<<TWEN|
-			1<<TWIE;
+	/* Check args */
+	for (uint32_t i = 0; i < iovcnt; ++i) {
+		twi_iov* iov_ptr = &iov[i];
+		if (!iov_ptr->dev_addr || !iov->ptr || !iov->len)
+			return twi_inval_args;
+		iov_ptr->op &= 1; /* normalize op */
+		iov_ptr->done = 0;
 	}
 
-	return twi_ok;
-}
+	if (s_twi_state.io.iov_cnt)
+		return twi_busy;
 
-twi_result twi_master_send_recv(uint8_t slave_addr,
-								void* tx_ptr, uint32_t tx_sz,
-								void* rx_ptr, uint32_t rx_sz)
-{
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-		if (s_twi_state.curr_st != twi_stop)
-			return twi_err;
-		if (!slave_addr || slave_addr & (1<<7))
-			return twi_err;
-		if (!tx_ptr || tx_sz == 0)
-			return twi_err;
-		if (!rx_ptr || rx_sz == 0)
-			return twi_err;
+	/* Init io op */
+	s_twi_state.io.iov = iov;
+	s_twi_state.io.iov_cnt = iovcnt;
+	s_twi_state.io.iov_ind = 0;
+	s_twi_state.io.cb = cb;
+	s_twi_state.io.data = data;
 
-		TWI_INIT_OP(twi_send_recv, slave_addr, tx_ptr, tx_sz, rx_ptr, rx_sz);
+	/* Start op */
+	TWCR =
+		1<<TWSTA|
+		0<<TWSTO|
+		1<<TWINT|
+		s_twi_state.slave_addr_set<<TWEA|
+		1<<TWEN|
+		1<<TWIE;
 
-		/* Start op */
-		TWCR =
-			1<<TWSTA|
-			0<<TWSTO|
-			1<<TWINT|
-			s_twi_state.slave_addr_set<<TWEA|
-			1<<TWEN|
-			1<<TWIE;
-	}
-
-	return twi_ok;
-}
-
-twi_result twi_submit_iov(twi_iov* iov, uint32_t iovcnt)
-{
-	(void)iov;
-	(void)iovcnt;
 	return twi_ok;
 }
 

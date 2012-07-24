@@ -19,41 +19,17 @@ extern "C" {
 typedef enum
 {
 	twi_ok           = 0,
-	twi_err          = 1,
-	twi_bus_fail     = 2,
-	twi_mt_sla_nack  = 3,
-	twi_mt_data_nack = 4,
-	twi_mr_sla_nack  = 5,
+	twi_bus_fail     = 1,
+	twi_mt_sla_nack  = 2,
+	twi_mt_data_nack = 3,
+	twi_mr_sla_nack  = 4,
+	twi_inval_args   = 5,
+	twi_not_impl     = 6,
+	twi_busy         = 7
 
 } twi_result;
 
-/* TWI events callback */
-typedef void (*twi_event_cb)(twi_result res, void* data);
-/*
- * TWI slave receive callback.
- * If callback returns error NACK will be send to master, ACK otherwise.
- */
-typedef twi_result (*twi_recv_cb)(uint8_t byte);
-
-/* Init TWI */
-twi_result twi_init(uint32_t twi_freq, twi_event_cb cb, void* data);
-/* To clear slave_addr or broadcast pass zero to all the params */
-twi_result twi_listen(uint8_t slave_addr, uint8_t is_broadcast,
-					  twi_recv_cb cb);
-
-/* TO BE REMOVED. IOV MUST EXIST INSTEAD */
-
-/* Master send */
-twi_result twi_master_send(uint8_t slave_addr, void* data, uint32_t sz);
-/* Master receive */
-twi_result twi_master_recv(uint8_t slave_addr, void* data, uint32_t sz);
-/* Master send and receive */
-twi_result twi_master_send_recv(uint8_t slave_addr,
-								void* data_wr, uint32_t sz_wr,
-								void* data_rd, uint32_t sz_rd);
-
-/* TODO */
-
+/* TWI iov operation */
 typedef enum
 {
 	twi_write = 0,
@@ -61,18 +37,34 @@ typedef enum
 
 } twi_iov_op;
 
+/* TWI iov struct */
 typedef struct
 {
 	uint8_t dev_addr;
 	uint8_t op;
 	uint8_t* ptr;
 	uint32_t len;
-	uint32_t idx;
+	uint32_t done;
 
 } twi_iov;
 
+/* TWI completion callback */
+typedef void (*twi_complete_cb)(twi_result res, void* data);
+/*
+ * TWI slave receive callback.
+ * If callback returns error NACK will be send to master, ACK otherwise.
+ */
+typedef twi_result (*twi_recv_cb)(uint8_t byte);
+
+/* Init TWI */
+twi_result twi_init(uint32_t twi_freq);
+/* To clear slave_addr or broadcast pass zero to all the params */
+twi_result twi_listen(uint8_t slave_addr, uint8_t is_broadcast,
+					  twi_recv_cb cb);
+
 /* TWI submit IO vec op */
-twi_result twi_submit_iov(twi_iov* iov, uint32_t iovcnt);
+twi_result twi_submit_iov(twi_iov* iov, uint32_t iovcnt,
+						  twi_complete_cb cb, void* data);
 
 #ifdef __cplusplus
 }
