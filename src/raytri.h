@@ -1,3 +1,9 @@
+/* Ray-Triangle Intersection Test Routines          */
+/* Different optimizations of my and Ben Trumbore's */
+/* code from journals of graphics tools (JGT)       */
+/* http://www.acm.org/jgt/                          */
+/* by Tomas Moller, May 2000                        */
+
 #ifndef RAYTRI_H
 #define RAYTRI_H
 
