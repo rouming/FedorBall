@@ -14,7 +14,7 @@ AR = ar
 RANLIB = ranlib
 WINDRES = windres
 
-INC = 
+INC = -I../src
 CFLAGS = -Wall -g
 RESINC = 
 RCFLAGS = 
@@ -48,9 +48,9 @@ $(OBJDIR_DEFAULT)/main.o: main.cpp
 	test -d $(OBJDIR_DEFAULT) || mkdir -p $(OBJDIR_DEFAULT)
 	$(CPP) $(CFLAGS_DEFAULT) $(INC_DEFAULT) -c -o $(OBJDIR_DEFAULT)/main.o main.cpp
 
-$(OBJDIR_DEFAULT)/raytri.o: raytri.c
+$(OBJDIR_DEFAULT)/raytri.o: ../src/raytri.c
 	test -d $(OBJDIR_DEFAULT) || mkdir -p $(OBJDIR_DEFAULT)
-	$(CPP) $(CFLAGS_DEFAULT) $(INC_DEFAULT) -c -o $(OBJDIR_DEFAULT)/raytri.o raytri.c
+	$(CPP) $(CFLAGS_DEFAULT) $(INC_DEFAULT) -c -o $(OBJDIR_DEFAULT)/raytri.o ../src/raytri.c
 
 
 clean_default:
