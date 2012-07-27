@@ -204,39 +204,11 @@ static void normal(const triangle& tr, vector& n)
 	vector_normalize(n);
 }
 
-static float phi = (1.0 + sqrt(5.0)) / 2.0;
+// (1.0 + sqrt(5.0)) / 2.0;
+static float phi = 1.61803;
 static float phi_1 = 1-phi;
-static float phi2 = phi * phi;
-static float phi3 = phi * phi * phi;
 static GLfloat dod_orig_vert[] =
 {
-/*
-	0,	 phi,  phi3, // V4	 0
-	0,	-phi,  phi3, // V8	 1
-
-	phi2,  phi2,  phi2, // V11	2
-	-phi2,	phi2,  phi2, // V13	 3
-	-phi2, -phi2,  phi2, // V16	 4
-	phi2, -phi2,  phi2, // V18	5
-
-	phi3,	  0,   phi, // V20	6
-	-phi3,	   0,	phi, // V23	 7
-	phi,  phi3,		0, // V28  8
-	-phi,  phi3,	 0, // V30	9
-	-phi, -phi3,	 0, // V34 10
-	phi, -phi3,		0, // V36 11
-	phi3,	  0,  -phi, // V38 12
-	-phi3,	   0,  -phi, // V41 13
-
-	phi2,  phi2, -phi2, // V45 14
-	-phi2,	phi2, -phi2, // V47 15
-	-phi2, -phi2, -phi2, // V50 16
-	phi2, -phi2, -phi2, // V52 17
-
-	0,	 phi, -phi3, // V56 18
-	0,	-phi, -phi3	 // V60 19
-*/
-
 	0, phi_1, phi,
 	0, phi_1, -phi,
 	0, -phi_1, phi,
@@ -262,24 +234,6 @@ static GLfloat dod_orig_vert[] =
 
 static GLbyte dod_orig_faces[] =
 {
-/*
-	1, 0, 4,   0, 3, 4,	  3, 7, 4,
-	0, 1, 2,   1, 5, 2,	  5, 6, 2,
-
-	0, 2, 3,   2, 8, 3,	  8, 9, 3,
-	1, 4, 5,   4,10, 5,	  10,11, 5,
-
-	3, 9, 7,   9,15, 7,	  15,13, 7,
-	4, 7,10,   7,13,10,	  13,16,10,
-	5,11, 6,   11,17, 6,  17,12, 6,
-	2, 6, 8,   6,12, 8,	  12,14, 8,
-
-	9, 8,15,   8,14,15,	  14,18,15,
-	11,10,17,  10,16,17,  16,19,17,
-	13,15,16,  15,18,16,  18,19,16,
-	12,17,14,  17,19,14,  19,18,14
-*/
-
 	12, 2, 0,	12, 0, 14,	12, 14, 5,
 	10, 8, 16,	10, 16, 2,	10, 2, 12,
 	17, 6, 7,	17, 7, 16,	17, 16, 8,
@@ -292,8 +246,7 @@ static GLbyte dod_orig_faces[] =
 	10, 12, 5,	10, 5, 4,	10, 4, 13,
 	3, 17, 8,	3, 8 ,10,	3, 10, 13,
 	11, 9, 19,	11, 19, 1,	11, 1, 15,
-	9, 18, 7,	9, 7, 6,	9, 6, 19, //??
-
+	9, 18, 7,	9, 7, 6,	9, 6, 19,
 };
 
 //faces * verteces_per_face * cords_in_3d
