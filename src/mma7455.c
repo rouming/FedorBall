@@ -28,6 +28,7 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
+#include "atomic.h"
 #include "mma7455.h"
 #include "twi.h"
 
@@ -197,8 +198,6 @@ int MMA7455_xyz( int *pX, int *pY, int *pZ)
 
 	return (0);                  // return : no error
 }
-
-#define MEM_BARRIER asm volatile ("" ::: "memory");
 
 typedef struct
 {

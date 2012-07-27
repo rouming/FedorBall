@@ -5,11 +5,11 @@
 #ifndef RING_BUFFER_H
 #define RING_BUFFER_H
 
+#include "atomic.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#define MEM_BARRIER __asm__ __volatile__("":::"memory")
 
 /* Lockless ring buffer structure */
 struct ring_buffer
