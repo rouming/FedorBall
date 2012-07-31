@@ -11,6 +11,13 @@
 #include <GL/glut.h>
 #include <GL/glext.h>
 
+// glm::vec3, glm::vec4, glm::ivec4, glm::mat4
+#include <glm/glm.hpp>
+// glm::translate, glm::rotate, glm::scale, glm::perspective
+#include <glm/gtc/matrix_transform.hpp>
+// glm::value_ptr
+#include <glm/gtc/type_ptr.hpp>
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -177,25 +184,6 @@ static void vector_normalize(vector& v)
 	v.z /= size;
 }
 
-static void triangle_normalize(triangle& tr)
-{
-	vector v0 = {tr.p0.x, tr.p0.y, tr.p0.z};
-	vector v1 = {tr.p1.x, tr.p1.y, tr.p1.z};
-	vector v2 = {tr.p2.x, tr.p2.y, tr.p2.z};
-
-	vector_normalize(v0);
-	vector_normalize(v1);
-	vector_normalize(v2);
-
-	point p0 = {v0.x, v0.y, v0.z};
-	point p1 = {v1.x, v1.y, v1.z};
-	point p2 = {v2.x, v2.y, v2.z};
-
-	tr.p0 = p0;
-	tr.p1 = p1;
-	tr.p2 = p2;
-}
-
 static void normal(const triangle& tr, vector& n)
 {
 	vector v1 = {tr.p1.x - tr.p0.x, tr.p1.y - tr.p0.y, tr.p1.z - tr.p0.z};
@@ -275,6 +263,37 @@ void drawDodecahedron()
 	{
 		s_inited = 1;
 
+		// NORMALIZE AND ROTATE
+		if (1)
+		{
+			//  atan(1/phi) * (180/pi),
+			//  www.trinitas.ru/rus/doc/0232/006a/02321014.pdf
+			float angle = 31.717f;
+			glm::mat4 rot = glm::rotate(glm::mat4(1.0), angle,
+										glm::vec3(1.0f, 0.0f, 0.0f));
+
+			printf("const static fp_t s_coords_vert[] =\n{\n");
+			for (unsigned int i = 0;
+				 i < sizeof(dod_orig_vert)/sizeof(dod_orig_vert[0]);
+				 i += 3)
+			{
+				GLfloat x = dod_orig_vert[i+0];
+				GLfloat y = dod_orig_vert[i+1];
+				GLfloat z = dod_orig_vert[i+2];
+
+				glm::vec3 vec3 = glm::normalize(glm::vec3(x, y, z));
+				glm::vec4 vec = rot * glm::vec4(vec3, 0.0f);
+
+				dod_orig_vert[i+0] = vec.x;
+				dod_orig_vert[i+1] = vec.y;
+				dod_orig_vert[i+2] = vec.z;
+
+				printf("\tFTOFP(%.5ff),\t\tFTOFP(%.5ff),\t\tFTOFP(%.5ff),\n",
+					   vec.x, vec.y, vec.z);
+			}
+			printf("};\n");
+		}
+
 		// init dod verteces and faces
 		int sz = sizeof(dod_orig_faces)/sizeof(dod_orig_faces[0]);
 		for (int i = 0; i < sz; i += 9) {
@@ -289,7 +308,6 @@ void drawDodecahedron()
 				GLfloat y = dod_orig_vert[dod_orig_faces[i+j] * 3 + 1];
 				GLfloat z = dod_orig_vert[dod_orig_faces[i+j] * 3 + 2];
 				vector v = {x, y, z};
-				vector_normalize(v);
 				point p = {v.x, v.y, v.z};
 				verts.insert(p);
 				faces.push_back(p);
@@ -371,7 +389,6 @@ void drawDodecahedron()
 		for (int i = 0; i < sz; i += 3) {
 			triangle tr;
 			create_triangle(dod_orig_vert, dod_orig_faces, i, tr);
-			triangle_normalize(tr);
 
 			//Count intersection with triangle
 			fp_t orig[3] = {0, 0, 0};
