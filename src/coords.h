@@ -1,10 +1,5 @@
 /***************************************************************************
  * Dodecahedron coords (verteces and faces)
- *
- * Coords were taken from
- * http://www.maths.surrey.ac.uk/hosted-sites/R.Knott/Fibonacci/phi3DGeom.html
- * Actually, on the site phi_1 means phi-1, not 1-phi,
- * but this my typo does not matter at all.
  **************************************************************************/
 #ifndef COORDS_H
 #define COORDS_H
@@ -22,21 +17,6 @@
  * BOTTOM
  * ------
  *
- *            @ 6
- *
- *            @ 1
- *  @ 10                @ 7
- *      @ 5         @ 2
- *
- *
- *       @ 4     @ 3
- *
- *    @ 9            @ 8
- *
- *
- *
- * TOP
- * ---
  *
  *    @ 8             @ 9
  *
@@ -50,6 +30,32 @@
  *
  *            @ 6
  *
+ *
+ * ^    ^    ^    ^    ^    ^
+ * |    |    |    |    |    |
+ *
+ *            VIEWER
+ *
+ * TOP
+ * ---
+ *
+ *            @ 6
+ *
+ *            @ 1
+ *  @ 10                @ 7
+ *      @ 5         @ 2
+ *
+ *
+ *       @ 4     @ 3
+ *
+ *    @ 9            @ 8
+ *
+ *
+ * ^    ^    ^    ^    ^    ^
+ * |    |    |    |    |    |
+ *
+ *            VIEWER
+ *
  */
 
 /* TLC5940 pinout index */
@@ -58,34 +64,40 @@
 #define TLC2 16*2
 #define TLC3 16*3
 
-/* (1.0f + sqrtf(5.0f)) / 2.0f */
-#define PHI   FTOFP(1.61803f)
-/* 1.0f - PHI */
-#define PHI_1 FTOFP(-0.61803f)
-
-/* Dodecahedron 20 real coords verteces: every row is a vertex (x,y,z) */
+/* Dodecahedron 20 real coords verteces: every row is a vertex (x,y,z).
+ * Original coords were taken from
+ * http://www.maths.surrey.ac.uk/hosted-sites/R.Knott/Fibonacci/phi3DGeom.html
+ * Actually, on the site phi_1 means phi-1, not 1-phi,
+ * but this my typo does not matter at all.
+ *
+ * Then verteces were normalized and rotated on 31.717 degrees around X axis
+ * (OpenGL coordinate system)
+ * (www.trinitas.ru/rus/doc/0232/006a/02321014.pdf) to have bottom face
+ * lay in X plane
+ *
+ * (see output of ../gl_dodecahedron_src/dodecahedron and
+ *  sources: ../gl_dodecahedron_src/main.cpp:drawDodecahedron for details)
+ */
 const static fp_t s_coords_vert[] =
 {
-	0,      PHI_1,    PHI,
-	0,      PHI_1,   -PHI,
-	0,     -PHI_1,    PHI,
-	0,     -PHI_1,   -PHI,
-	PHI,    0,        PHI_1,
-	PHI,    0,       -PHI_1,
-   -PHI,    0,        PHI_1,
-   -PHI,    0,       -PHI_1,
-	PHI_1,  PHI,      0,
-	PHI_1, -PHI,      0,
-   -PHI_1,  PHI,      0,
-   -PHI_1, -PHI,      0,
-	1,      1,        1,
-	1,      1,       -1,
-	1,     -1,        1,
-	1,     -1,       -1,
-   -1,      1,        1,
-   -1,      1,       -1,
-   -1,     -1,        1,
-   -1,     -1,       -1
+	FTOFP(0.00000f),		FTOFP(-0.79465f),		FTOFP(0.60707f),
+	FTOFP(0.00000f),		FTOFP(0.79465f),		FTOFP(-0.60707f),
+	FTOFP(0.93417f),		FTOFP(0.18759f),		FTOFP(-0.30353f),
+	FTOFP(0.93417f),		FTOFP(-0.18759f),		FTOFP(0.30353f),
+	FTOFP(-0.93417f),		FTOFP(0.18759f),		FTOFP(-0.30353f),
+	FTOFP(-0.93417f),		FTOFP(-0.18759f),		FTOFP(0.30353f),
+	FTOFP(-0.35682f),		FTOFP(0.79466f),		FTOFP(0.49112f),
+	FTOFP(-0.35682f),		FTOFP(-0.79466f),		FTOFP(-0.49112f),
+	FTOFP(0.35682f),		FTOFP(0.79466f),		FTOFP(0.49112f),
+	FTOFP(0.35682f),		FTOFP(-0.79466f),		FTOFP(-0.49112f),
+	FTOFP(0.57735f),		FTOFP(0.18760f),		FTOFP(0.79465f),
+	FTOFP(0.57735f),		FTOFP(0.79465f),		FTOFP(-0.18760f),
+	FTOFP(0.57735f),		FTOFP(-0.79465f),		FTOFP(0.18760f),
+	FTOFP(0.57735f),		FTOFP(-0.18760f),		FTOFP(-0.79465f),
+	FTOFP(-0.57735f),		FTOFP(0.18760f),		FTOFP(0.79465f),
+	FTOFP(-0.57735f),		FTOFP(0.79465f),		FTOFP(-0.18760f),
+	FTOFP(-0.57735f),		FTOFP(-0.79465f),		FTOFP(0.18760f),
+	FTOFP(-0.57735f),		FTOFP(-0.18760f),		FTOFP(-0.79465f),
 };
 
 /* Dodecahedron 20 leds verteces: every row is a led index (r,g,b)  */
