@@ -7,8 +7,11 @@
 #include <math.h>
 
 #include "raytri.h"
+#include "std.h"
 
 #define EPSILON 0.0001f
+BUILD_BUG_ON(EPSILON == 0);
+
 #define CROSS(dest,v1,v2)						\
 	dest[0]=v1[1]*v2[2]-v1[2]*v2[1];			\
 	dest[1]=v1[2]*v2[0]-v1[0]*v2[2];			\
@@ -19,8 +22,10 @@
 	dest[1]=v1[1]-v2[1];						\
 	dest[2]=v1[2]-v2[2];
 
-#define FIXED_EPSILON FTOFP(0.0001f)
-#define FIXED_CROSS(dest,v1,v2)								\
+#define FIXED_EPSILON FTOFP(0.01f)
+BUILD_BUG_ON(FIXED_EPSILON == 0);
+
+#define FIXED_CROSS(dest,v1,v2)							\
 	dest[0]=FPMUL(v1[1],v2[2])-FPMUL(v1[2],v2[1]);		\
 	dest[1]=FPMUL(v1[2],v2[0])-FPMUL(v1[0],v2[2]);		\
 	dest[2]=FPMUL(v1[0],v2[1])-FPMUL(v1[1],v2[0]);
