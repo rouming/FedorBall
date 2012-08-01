@@ -8,6 +8,8 @@
 CC=avr-gcc
 CXX=avr-g++
 MMCU=atmega16
+ROM_SZ=16384
+RAM_SZ=1024
 
 CLK=16000000UL
 FLAGS=-c -O3 -Wall -gdwarf-2 -mmcu=$(MMCU) -DF_CLK=$(CLK) -DF_CPU=$(CLK)
@@ -20,6 +22,7 @@ all: fedorball.elf
 
 fedorball.elf: main.o uart.o twi.o Tlc5940.o mma7455.o raytri.o
 	$(CXX) $(LFLAGS) main.o uart.o twi.o Tlc5940.o mma7455.o raytri.o -o fedorball.elf
+	./binary_stat.pl fedorball.elf $(ROM_SZ) $(RAM_SZ)
 
 Tlc5940.o:
 	$(CXX) $(CXXFLAGS) tlc5940/Tlc5940.cpp
