@@ -382,6 +382,26 @@ void drawDodecahedron()
 	//glutSolidSphere(0.96999, 100, 100);
 	glColor3f(1,1,1);
 
+	// Draw index of every vertex
+	{
+		for (int face = 0; face < 12; ++face) {
+			for (int vert = 0; vert < 5; ++vert) {
+				// we should get last 2 vertex from faces array
+				if (vert == 3 || vert == 4)
+					vert += 4;
+
+				int v = dod_orig_faces[face*9 + vert];
+
+				float pos[3] = {dod_orig_vert[v*3 + 0],
+								dod_orig_vert[v*3 + 1],
+								dod_orig_vert[v*3 + 2]};
+				float color[4] = {0,0,1,1};
+				std::stringstream s;
+				s << v;
+				drawString3D(s.str().c_str(), pos, color, font);
+			}
+		}
+	}
 
 	// Draw intersections
 	{
