@@ -20,8 +20,8 @@ static struct
 
 	struct {
 		twi_iov* iov;
-		uint32_t iov_cnt;
-		uint32_t iov_ind;
+		uint8_t iov_cnt;
+		uint8_t iov_ind;
 		twi_complete_cb cb;
 		void* data;
 	} io;
@@ -348,11 +348,11 @@ twi_result twi_listen(uint8_t slave_addr, uint8_t is_broadcast,
 	return twi_ok;
 }
 
-twi_result twi_submit_iov(twi_iov* iov, uint32_t iovcnt,
+twi_result twi_submit_iov(twi_iov* iov, uint8_t iovcnt,
 						  twi_complete_cb cb, void* data)
 {
 	/* Check args */
-	for (uint32_t i = 0; i < iovcnt; ++i) {
+	for (uint8_t i = 0; i < iovcnt; ++i) {
 		twi_iov* iov_ptr = &iov[i];
 		if (!iov_ptr->dev_addr || !iov->ptr || !iov->len)
 			return twi_inval_args;

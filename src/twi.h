@@ -43,8 +43,8 @@ typedef struct
 	uint8_t dev_addr;
 	uint8_t op;
 	uint8_t* ptr;
-	uint32_t len;
-	uint32_t done;
+	uint16_t len;
+	uint16_t done;
 
 } twi_iov;
 
@@ -63,7 +63,7 @@ twi_result twi_listen(uint8_t slave_addr, uint8_t is_broadcast,
 					  twi_recv_cb cb);
 
 /* TWI submit IO vec op */
-twi_result twi_submit_iov(twi_iov* iov, uint32_t iovcnt,
+twi_result twi_submit_iov(twi_iov* iov, uint8_t iovcnt,
 						  twi_complete_cb cb, void* data);
 
 #ifdef __cplusplus
