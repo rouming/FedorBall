@@ -55,8 +55,8 @@
  *            VIEWER
  *
  * leds verteces:
- *    TLC1: @1->3, @2->13, @3->10,  @4->8,  @5->17
- *    TLC2: @6->1, @7->4,  @8->12,  @9->16, @10->6
+ *    TLC2: @1->3, @2->13, @3->10,  @4->8,  @5->17
+ *    TLC3: @6->1, @7->4,  @8->12,  @9->16, @10->6
  */
 
 /* Dodecahedron 20 real coords verteces: every row is a vertex (x,y,z).
