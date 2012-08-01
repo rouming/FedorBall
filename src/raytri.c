@@ -32,6 +32,7 @@
 	dest[1]=v1[1]-v2[1];						\
 	dest[2]=v1[2]-v2[2];
 
+#ifndef FIXED_INTERSECT
 
 /* the original jgt code */
 int intersect_triangle(float orig[3], float dir[3],
@@ -77,6 +78,8 @@ int intersect_triangle(float orig[3], float dir[3],
 	return 1;
 }
 
+#else
+
 /* the original jgt code. fixed point version */
 int fixed_intersect_triangle(fp_t orig[3], fp_t dir[3],
 							 fp_t vert0[3], fp_t vert1[3], fp_t vert2[3],
@@ -121,6 +124,9 @@ int fixed_intersect_triangle(fp_t orig[3], fp_t dir[3],
 	return 1;
 }
 
+#endif //FIXED_INTERSECT
+
+#ifdef INTERSECT_BENCHMARK
 
 /* code rewritten to do tests on the sign of the determinant */
 /* the division is at the end in the code                    */
@@ -312,3 +318,5 @@ int intersect_triangle3(float orig[3], float dir[3],
 
 	return 1;
 }
+
+#endif //INTERSECT_BENCHMARK
