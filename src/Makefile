@@ -12,11 +12,20 @@ ROM_SZ=16384
 RAM_SZ=1024
 
 CLK=16000000UL
-FLAGS=-c -O3 -Wall -gdwarf-2 -mmcu=$(MMCU) -DF_CLK=$(CLK) -DF_CPU=$(CLK)
 
-CFLAGS=-std=gnu99 $(FLAGS)
-CXXFLAGS=$(FLAGS)
-LFLAGS=-mmcu=$(MMCU)
+#
+# Code optimization flags were taken from:
+# http://www.tty1.net/blog/2008-04-29-avr-gcc-optimisations_en.html
+# Atmel AVR4027: Tips and Tricks to Optimize Your C Code for 8-bit AVR Microcontrollers
+#
+OPTFLAGS=-Wundef -Werror -funsigned-char -funsigned-bitfields -ffunction-sections -fno-inline-small-functions
+OPTLFLAGS=-Wl,--relax,--gc-sections
+
+FLAGS=-c -O3 -Wall -gdwarf-2 -mmcu=$(MMCU) -DF_CLK=$(CLK) -DF_CPU=$(CLK) $(OPTFLAGS)
+
+CFLAGS=-std=gnu99 $(FLAGS) $(OPTFLAGS) -Wstrict-prototypes
+CXXFLAGS=$(FLAGS) $(OPTFLAGS)
+LFLAGS=-mmcu=$(MMCU) $(OPTLFLAGS)
 
 all: fedorball.elf
 
