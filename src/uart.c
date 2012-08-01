@@ -34,7 +34,7 @@ ISR(USART_RXC_vect)
 		return;
 
 	void *p1, *p2;
-	uint32_t sz1, sz2;
+	uint16_t sz1, sz2;
 
 	/* Write one byte to ring buffer and commit it */
 	ring_buffer_write_ptr(&s_rx_rbuf, 1, &p1, &sz1, &p2, &sz2);
@@ -58,7 +58,7 @@ ISR(USART_UDRE_vect)
 	}
 
 	void *p1, *p2;
-	uint32_t sz1, sz2;
+	uint16_t sz1, sz2;
 
 	/* Get one byte from ring buffer and commit it */
 	ring_buffer_read_ptr(&s_tx_rbuf, 1, &p1, &sz1, &p2, &sz2);
@@ -69,8 +69,8 @@ ISR(USART_UDRE_vect)
 /*************************************************************************/
 
 void uart_init(uint16_t bauds,
-			   uint8_t* rx_buff, uint32_t rx_sz,
-			   uint8_t* tx_buff, uint32_t tx_sz,
+			   uint8_t* rx_buff, uint16_t rx_sz,
+			   uint8_t* tx_buff, uint16_t tx_sz,
 			   uart_rx_cb cb, void* user_data)
 {
 	uint16_t ubrr = F_CLK/16/bauds - 1;
@@ -95,30 +95,30 @@ void uart_init(uint16_t bauds,
 	UCSRB = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE);
 }
 
-void uart_rx_ptr(void** p1, uint32_t* sz1)
+void uart_rx_ptr(void** p1, uint16_t* sz1)
 {
 	void *p2;
-	uint32_t sz2;
+	uint16_t sz2;
 
-	uint32_t used = ring_buffer_used_size(&s_rx_rbuf);
+	uint16_t used = ring_buffer_used_size(&s_rx_rbuf);
 	ring_buffer_read_ptr(&s_rx_rbuf, used, p1, sz1, &p2, &sz2);
 }
 
-void uart_tx_ptr(void** p1, uint32_t* sz1)
+void uart_tx_ptr(void** p1, uint16_t* sz1)
 {
 	void *p2;
-	uint32_t sz2;
+	uint16_t sz2;
 
-	uint32_t used = ring_buffer_free_size(&s_tx_rbuf);
+	uint16_t used = ring_buffer_free_size(&s_tx_rbuf);
 	ring_buffer_write_ptr(&s_tx_rbuf, used, p1, sz1, &p2, &sz2);
 }
 
-void uart_rx_advance(uint32_t sz)
+void uart_rx_advance(uint16_t sz)
 {
 	ring_buffer_read_advance(&s_rx_rbuf, sz);
 }
 
-void uart_tx_advance(uint32_t sz)
+void uart_tx_advance(uint16_t sz)
 {
 	if (sz == 0)
 		return;
@@ -130,7 +130,7 @@ void uart_tx_advance(uint32_t sz)
 		if (UCSRA & (1<<UDRE)) {
 			UCSRB |= (1<<UDRIE);
 			void *p1, *p2;
-			uint32_t sz1, sz2;
+			uint16_t sz1, sz2;
 
 			/* Get one byte from ring buffer */
 			ring_buffer_read_ptr(&s_tx_rbuf, 1, &p1, &sz1, &p2, &sz2);
@@ -144,7 +144,7 @@ uint16_t uart_printf(const char* fmt, ...)
 {
 	va_list args;
 	char* p;
-	uint32_t sz;
+	uint16_t sz;
 
 	uart_tx_ptr((void**)&p, &sz);
 

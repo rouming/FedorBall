@@ -29,7 +29,7 @@ void uart_rx_to_tx(void* rx_cb_data)
 	(void)rx_cb_data;
 
 	void *rx_p, *tx_p;
-	uint32_t rx_sz, tx_sz, sz;
+	uint16_t rx_sz, tx_sz, sz;
 	uart_rx_ptr(&rx_p, &rx_sz);
 	uart_tx_ptr(&tx_p, &tx_sz);
 	sz = (rx_sz > tx_sz ? tx_sz : rx_sz);
