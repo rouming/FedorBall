@@ -288,8 +288,8 @@ void drawDodecahedron()
 				dod_orig_vert[i+1] = vec.y;
 				dod_orig_vert[i+2] = vec.z;
 
-				printf("\tFTOFP(%.5ff),\t\tFTOFP(%.5ff),\t\tFTOFP(%.5ff),\n",
-					   vec.x, vec.y, vec.z);
+				printf("\t%hd,\t\t%hd,\t\t%hd,\n",
+					   FTOFP(vec.x), FTOFP(vec.y), FTOFP(vec.z));
 			}
 			printf("};\n");
 		}
