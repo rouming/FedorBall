@@ -136,7 +136,11 @@ void mma7455_test()
 				// Commit
 				tlc.update();
 
-				LOG("Found face: %u", face_idx/9);
+				LOG("found face %u, v1=%u, v2=%u, v3=%u\n\n",
+					i/9,
+					s_vert_tri_faces[i + 0],
+					s_vert_tri_faces[i + 1],
+					s_vert_tri_faces[i + 2]);
 
 				break;
 			}
