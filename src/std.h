@@ -13,4 +13,7 @@
 		CONCAT_NAME(__build_bug_on_dummy,								\
 					__LINE__)(char a[1 - 2*!!(condition)])
 
+/* Returns array size */
+#define ARRAY_SIZE(arr) (sizeof(arr)/sizeof(arr[0]))
+
 #endif //STD_H
