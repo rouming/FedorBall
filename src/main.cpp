@@ -146,7 +146,7 @@ void mma7455_test()
 			}
 		}
 
-		_delay_ms(1000);
+		_delay_ms(100);
 	}
 }
 
