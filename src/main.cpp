@@ -14,6 +14,9 @@
 #include "uart.h"
 #include "twi.h"
 #include "logging.h"
+#include "coords.h"
+#include "std.h"
+#include "raytri.h"
 
 /* Size must be 2^N */
 #define UART_RX_BUFF_SZ (1<<2)
@@ -70,31 +73,74 @@ void mma7455_test()
 
 	while (1) {
 		int x,y,z, error;
-
-		// The function MMA7455_xyz returns the 'g'-force
-		// as an integer in 64 per 'g'.
-
-		// set x,y,z to zero (they are not written in case of an error).
 		x = y = z = 0;
 		error = MMA7455_xyz(&x, &y, &z); // get the accelerometer values.
-
-		/*
-		double dx,dy,dz;
-		dx = (double) x / 64.0;          // calculate the 'g' values.
-		dy = (double) y / 64.0;
-		dz = (double) z / 64.0;
-		*/
-
-		int led = (int)((float)y/64.0f*15.0f + 15.0f/2.0f);
-
 		if (error != 0)
 			LOG("xyz err: %x\n", error);
 		else
-			LOG("xyz g-force: x=%d y=%d z=%d, led=%d\n", x, y, z, led);
+			LOG("xyz g-force: x=%d y=%d z=%d\n", x, y, z);
 
-		tlc.clear();
-		tlc.set(led, 4095);
-		tlc.update();
+		fp_t orig[] = {FPZERO, FPZERO, FPZERO};
+		fp_t dir[] = {ITOFP(x), ITOFP(y), ITOFP(z)};
+
+		// Walk through every face triangle
+		for (unsigned int i = 0;
+			 error == 0 &&
+			 i < ARRAY_SIZE(s_vert_tri_faces);
+			 i += 3) {
+			fp_t vert0[] = {
+				s_coords_vert[s_vert_tri_faces[i + 0] * 3 + 0],
+				s_coords_vert[s_vert_tri_faces[i + 0] * 3 + 1],
+				s_coords_vert[s_vert_tri_faces[i + 0] * 3 + 2]};
+			fp_t vert1[] = {
+				s_coords_vert[s_vert_tri_faces[i + 1] * 3 + 0],
+				s_coords_vert[s_vert_tri_faces[i + 1] * 3 + 1],
+				s_coords_vert[s_vert_tri_faces[i + 1] * 3 + 2]};
+			fp_t vert2[] = {
+				s_coords_vert[s_vert_tri_faces[i + 2] * 3 + 0],
+				s_coords_vert[s_vert_tri_faces[i + 2] * 3 + 1],
+				s_coords_vert[s_vert_tri_faces[i + 2] * 3 + 2]};
+
+			//Count intersection with triangle
+			fp_t t, u, v;
+			if (fixed_intersect_triangle(orig, dir,
+										 vert0, vert1, vert2,
+										 &t, &u, &v) && t < 0) {
+				uint8_t face_idx = i/9*9;
+				tlc.clear();
+
+#define TLC_SET_RGB(tlc, tlc_vert, r, g, b)			\
+				do {								\
+					tlc.set((tlc_vert)[0], r << 4);	\
+					tlc.set((tlc_vert)[1], g << 4);	\
+					tlc.set((tlc_vert)[2], b << 4);	\
+				} while (0)
+
+				// Set color for every tlc led in pentagon face
+				TLC_SET_RGB(tlc,
+							&s_leds_vert[s_vert_tri_faces[face_idx + 0] * 3],
+							0xff, 0x00, 0x00);
+				TLC_SET_RGB(tlc,
+							&s_leds_vert[s_vert_tri_faces[face_idx + 1] * 3],
+							0xff, 0x00, 0x00);
+				TLC_SET_RGB(tlc,
+							&s_leds_vert[s_vert_tri_faces[face_idx + 2] * 3],
+							0xff, 0x00, 0x00);
+				TLC_SET_RGB(tlc,
+							&s_leds_vert[s_vert_tri_faces[face_idx + 7] * 3],
+							0xff, 0x00, 0x00);
+				TLC_SET_RGB(tlc,
+							&s_leds_vert[s_vert_tri_faces[face_idx + 8] * 3],
+							0xff, 0x00, 0x00);
+
+				// Commit
+				tlc.update();
+
+				LOG("Found face: %u", face_idx/9);
+
+				break;
+			}
+		}
 
 		_delay_ms(1000);
 	}
