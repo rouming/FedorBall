@@ -20,8 +20,9 @@ CLK=16000000UL
 #
 OPTFLAGS=-Wundef -Werror -funsigned-char -funsigned-bitfields -ffunction-sections -fno-inline-small-functions
 OPTLFLAGS=-Wl,--relax,--gc-sections
+DEFINES=-DFIXED_INTERSECT
 
-FLAGS=-c -O3 -Wall -gdwarf-2 -mmcu=$(MMCU) -DF_CLK=$(CLK) -DF_CPU=$(CLK) $(OPTFLAGS)
+FLAGS=-c -O3 -Wall -gdwarf-2 -mmcu=$(MMCU) -DF_CLK=$(CLK) -DF_CPU=$(CLK) $(OPTFLAGS) $(DEFINES)
 
 CFLAGS=-std=gnu99 $(FLAGS) $(OPTFLAGS) -Wstrict-prototypes
 CXXFLAGS=$(FLAGS) $(OPTFLAGS)
