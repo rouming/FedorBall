@@ -100,14 +100,14 @@ int fixed_intersect_triangle(fp_t orig[3], fp_t dir[3],
 
 	if (det == 0)
 		return 0;
-	inv_det = FPDIV(FPONE, det);
+	inv_det = FPDIV(ITOFP(1), det);
 
 	/* calculate distance from vert0 to ray origin */
 	FIXED_SUB(tvec, orig, vert0);
 
 	/* calculate U parameter and test bounds */
 	*u = FPMUL(FIXED_DOT(tvec, pvec), inv_det);
-	if (*u < FPZERO || *u > FPONE)
+	if (*u < FPZERO || *u > ITOFP(1))
 		return 0;
 
 	/* prepare to test V parameter */
@@ -115,7 +115,7 @@ int fixed_intersect_triangle(fp_t orig[3], fp_t dir[3],
 
 	/* calculate V parameter and test bounds */
 	*v = FPMUL(FIXED_DOT(dir, qvec), inv_det);
-	if (*v < FPZERO || *u + *v > FPONE)
+	if (*v < FPZERO || *u + *v > ITOFP(1))
 		return 0;
 
 	/* calculate t, ray intersects triangle */
