@@ -81,7 +81,7 @@ void mma7455_test()
 			LOG("xyz g-force: x=%d y=%d z=%d\n", x, y, z);
 
 		fp_t orig[] = {FPZERO, FPZERO, FPZERO};
-		fp_t dir[] = {ITOFP(x), ITOFP(y), ITOFP(z)};
+		fp_t dir[] = {ITOFP(y), -ITOFP(z), ITOFP(x)};
 
 		// Walk through every face triangle
 		for (unsigned int i = 0;
