@@ -27,8 +27,10 @@ void uart_rx_advance(uint16_t sz);
 /* Commit write ptr after writing data to TX buffer */
 void uart_tx_advance(uint16_t sz);
 
-/* Print formatted string to UART */
-uint16_t uart_printf(const char* fmt, ...);
+/* Print formatted string that resides in program memory to UART.
+   This function is totally async, i.e. if there is no place in
+   ring buffer, string will be truncated. */
+uint16_t uart_printf_pgm_async(const char* fmt, ...);
 
 #ifdef __cplusplus
 }

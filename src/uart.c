@@ -140,7 +140,7 @@ void uart_tx_advance(uint16_t sz)
 	}
 }
 
-uint16_t uart_printf(const char* fmt, ...)
+uint16_t uart_printf_pgm_async(const char* fmt, ...)
 {
 	va_list args;
 	char* p;
@@ -153,7 +153,7 @@ uint16_t uart_printf(const char* fmt, ...)
 		return 0;
 
 	va_start(args, fmt);
-	sz = vsnprintf(p, sz, fmt, args);
+	sz = vsnprintf_P(p, sz, fmt, args);
 	va_end(args);
 
 	uart_tx_advance(sz);
