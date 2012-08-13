@@ -34,19 +34,19 @@
  *    TLC1: @6->2, @7->7,  @8->19, @9->15, @10->5
  *
  *
- * TOP (clockwise direction)
+ * TOP (anticlockwise direction)
  * ---
  *
  *            @6
  *
  *            @2
- *  @10                @7
- *      @1         @3
+ *  @7                 @10
+ *      @3          @1
  *
  *
- *       @5     @4
+ *       @4      @5
  *
- *    @9            @8
+ *    @8            @9
  *
  *
  * ^    ^    ^    ^    ^    ^
@@ -55,8 +55,8 @@
  *            VIEWER
  *
  * leds verteces:
- *    TLC2: @1->17, @2->3,  @3->13,  @4->10,  @5 ->8
- *    TLC3: @6->1,  @7->4,  @8->12,  @9->16,  @10->6
+ *    TLC2: @1->13, @2->3,  @3->17,  @4 ->8,  @5 ->10,
+ *    TLC3: @6->1,  @7->6,  @8->16,  @9->12,  @10->4
  */
 
 /* Dodecahedron 20 real coords verteces: every row is a vertex (x,y,z).
@@ -115,20 +115,20 @@ const static uint8_t s_leds_vert[] =
 	R_TLC(3, 0),	G_TLC(3, 0),	B_TLC(3, 0),
 	R_TLC(1, 0),	G_TLC(1, 0),	B_TLC(1, 0),
 	R_TLC(2, 1),	G_TLC(2, 1),	B_TLC(2, 1),
-	R_TLC(3, 1),	G_TLC(3, 1),	B_TLC(3, 1),
-	R_TLC(1, 4),	G_TLC(1, 4),	B_TLC(1, 4),
 	R_TLC(3, 4),	G_TLC(3, 4),	B_TLC(3, 4),
+	R_TLC(1, 4),	G_TLC(1, 4),	B_TLC(1, 4),
+	R_TLC(3, 1),	G_TLC(3, 1),	B_TLC(3, 1),
 	R_TLC(1, 1),	G_TLC(1, 1),	B_TLC(1, 1),
-	R_TLC(2, 4),	G_TLC(2, 4),	B_TLC(2, 4),
-	R_TLC(0, 2),	G_TLC(0, 2),	B_TLC(0, 2),
 	R_TLC(2, 3),	G_TLC(2, 3),	B_TLC(2, 3),
+	R_TLC(0, 2),	G_TLC(0, 2),	B_TLC(0, 2),
+	R_TLC(2, 4),	G_TLC(2, 4),	B_TLC(2, 4),
 	R_TLC(0, 3),	G_TLC(0, 3),	B_TLC(0, 3),
-	R_TLC(3, 2),	G_TLC(3, 2),	B_TLC(3, 2),
-	R_TLC(2, 2),	G_TLC(2, 2),	B_TLC(2, 2),
-	R_TLC(0, 4),	G_TLC(0, 4),	B_TLC(0, 4),
-	R_TLC(1, 3),	G_TLC(1, 3),	B_TLC(1, 3),
 	R_TLC(3, 3),	G_TLC(3, 3),	B_TLC(3, 3),
 	R_TLC(2, 0),	G_TLC(2, 0),	B_TLC(2, 0),
+	R_TLC(0, 4),	G_TLC(0, 4),	B_TLC(0, 4),
+	R_TLC(1, 3),	G_TLC(1, 3),	B_TLC(1, 3),
+	R_TLC(3, 2),	G_TLC(3, 2),	B_TLC(3, 2),
+	R_TLC(2, 2),	G_TLC(2, 2),	B_TLC(2, 2),
 	R_TLC(0, 1),	G_TLC(0, 1),	B_TLC(0, 1),
 	R_TLC(1, 2),	G_TLC(1, 2),	B_TLC(1, 2),
 };
