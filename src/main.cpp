@@ -14,7 +14,10 @@
 #include "uart.h"
 #include "twi.h"
 #include "logging.h"
+
+//#define FACES_WALKING_TEST
 #include "coords.h"
+
 #include "std.h"
 #include "raytri.h"
 
@@ -22,6 +25,14 @@
 #define UART_RX_BUFF_SZ (1<<2)
 /* Size must be 2^N */
 #define UART_TX_BUFF_SZ (1<<8)
+
+/* Set RGB color for tlc */
+#define TLC_SET_RGB(tlc, tlc_vert, r, g, b)				\
+	do {												\
+		tlc.set((tlc_vert)[0], (r) << 4);				\
+		tlc.set((tlc_vert)[1], (g) << 4);				\
+		tlc.set((tlc_vert)[2], (b) << 4);				\
+	} while (0)
 
 static unsigned char s_uart_rx_buff[UART_RX_BUFF_SZ];
 static unsigned char s_uart_tx_buff[UART_TX_BUFF_SZ];
@@ -42,6 +53,83 @@ void uart_rx_to_tx(void* rx_cb_data)
 	uart_rx_advance(sz);
 	uart_tx_advance(sz);
 }
+
+#ifdef FACES_WALKING_TEST
+static void do_faces_walking_test()
+{
+	Tlc5940 tlc;
+	tlc.init();
+
+	while (1) {
+		for (unsigned int face = 0;
+			 ARRAY_SIZE(s_face_coords_middle_test); ++face) {
+			fp_t x = s_face_coords_middle_test[face * 3 + 0];
+			fp_t y = s_face_coords_middle_test[face * 3 + 1];
+			fp_t z = s_face_coords_middle_test[face * 3 + 2];
+
+			fp_t orig[] = {FPZERO, FPZERO, FPZERO};
+			fp_t dir[] = {x, y, z};
+
+			// Walk through every face triangle
+			for (unsigned int i = 0;
+				 i < ARRAY_SIZE(s_vert_tri_faces);
+				 i += 3) {
+				fp_t vert0[] = {
+					s_coords_vert[s_vert_tri_faces[i + 0] * 3 + 0],
+					s_coords_vert[s_vert_tri_faces[i + 0] * 3 + 1],
+					s_coords_vert[s_vert_tri_faces[i + 0] * 3 + 2]};
+				fp_t vert1[] = {
+					s_coords_vert[s_vert_tri_faces[i + 1] * 3 + 0],
+					s_coords_vert[s_vert_tri_faces[i + 1] * 3 + 1],
+					s_coords_vert[s_vert_tri_faces[i + 1] * 3 + 2]};
+				fp_t vert2[] = {
+					s_coords_vert[s_vert_tri_faces[i + 2] * 3 + 0],
+					s_coords_vert[s_vert_tri_faces[i + 2] * 3 + 1],
+					s_coords_vert[s_vert_tri_faces[i + 2] * 3 + 2]};
+
+				//Count intersection with triangle
+				fp_t t, u, v;
+				if (fixed_intersect_triangle(orig, dir,
+											 vert0, vert1, vert2,
+											 &t, &u, &v) && t < 0) {
+					uint8_t face_idx = i/9*9;
+					tlc.clear();
+
+					// Set color for every tlc led in pentagon face
+					TLC_SET_RGB(tlc,
+								&s_leds_vert[s_vert_tri_faces[face_idx + 0] * 3],
+								0xff, 0x00, 0x00);
+					TLC_SET_RGB(tlc,
+								&s_leds_vert[s_vert_tri_faces[face_idx + 1] * 3],
+								0xff, 0x00, 0x00);
+					TLC_SET_RGB(tlc,
+								&s_leds_vert[s_vert_tri_faces[face_idx + 2] * 3],
+								0xff, 0x00, 0x00);
+					TLC_SET_RGB(tlc,
+								&s_leds_vert[s_vert_tri_faces[face_idx + 7] * 3],
+								0xff, 0x00, 0x00);
+					TLC_SET_RGB(tlc,
+								&s_leds_vert[s_vert_tri_faces[face_idx + 8] * 3],
+								0xff, 0x00, 0x00);
+
+					// Commit
+					tlc.update();
+
+					LOG("face %u (must be %u), v1=%u, v2=%u, v3=%u\n\n",
+						i/9, face,
+						s_vert_tri_faces[i + 0],
+						s_vert_tri_faces[i + 1],
+						s_vert_tri_faces[i + 2]);
+
+					break;
+				}
+			}
+
+			_delay_ms(5000);
+		}
+	}
+}
+#endif /* FACES_WALKING_TEST */
 
 void mma7455_test()
 {
@@ -109,13 +197,6 @@ void mma7455_test()
 				uint8_t face_idx = i/9*9;
 				tlc.clear();
 
-#define TLC_SET_RGB(tlc, tlc_vert, r, g, b)			\
-				do {								\
-					tlc.set((tlc_vert)[0], r << 4);	\
-					tlc.set((tlc_vert)[1], g << 4);	\
-					tlc.set((tlc_vert)[2], b << 4);	\
-				} while (0)
-
 				// Set color for every tlc led in pentagon face
 				TLC_SET_RGB(tlc,
 							&s_leds_vert[s_vert_tri_faces[face_idx + 0] * 3],
@@ -161,6 +242,11 @@ int main()
 
 	// enable iterrupts
 	sei();
+
+#ifdef FACES_WALKING_TEST
+	do_faces_walking_test();
+	return 0;
+#endif
 
 	mma7455_test();
 

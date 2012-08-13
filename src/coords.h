@@ -7,21 +7,22 @@
 #include "fixed.h"
 
 /*
- * (X,Y) => X - tlc index, Y - led index
+ * (N,M) => N - tlc index, M - led index
+ *    #K => face index
  *
  *
  * BOTTOM (clockwise direction)
  * ------
  *
  *    1,2             1,3
- *
+ *            #10
  *        0,2      0,3
- *
- *
+ *   #11                #5
+ *             #4
  *      0,1         0,4
  *  1,1                 1,4
  *
- *            0,0
+ *      #3    0,0   #0
  *
  *            1,0
  *
@@ -40,14 +41,14 @@
  * ---
  *
  *            3,0
- *
+ *      #7          #6
  *            2,1
  *  3,1                 3,4
  *     2,2           2,0
- *
- *
+ *            #9
+ *  #2                  #8
  *       2,3      2,4
- *
+ *            #1
  *    3,2            3,3
  *
  *
@@ -154,5 +155,32 @@ const static uint8_t s_vert_tri_faces[] =
 	11, 9,  19,     11, 19, 1,      11,  1,   15, /* 10 */
 	9,  18, 7,      9,  7,  6,      9,   6,   19  /* 11 */
 };
+
+#ifdef FACES_WALKING_TEST
+const static fp_t s_face_coords_middle_test[] =
+{
+	689, -465, 599,
+	35, 230, 997,
+	-786, 644, -124,
+	-375, -672, 676,
+	97, -1018, -45,
+	793, -89, -642,
+	313, 350, -910,
+	-494, 658, -610,
+	919, 449, 48,
+	-51, 1022, 51,
+	-239, -543, -835,
+	-925, -384, -214
+};
+
+const static uint8_t s_faces_walking_test[] =
+{
+	/* bottom */
+	4, 3, 11, 10, 5, 0,
+
+	/* top */
+	1, 2, 7, 6, 8, 9
+};
+#endif /* FACES_WALKING_TEST */
 
 #endif //COORDS_H
