@@ -61,8 +61,9 @@ static void do_faces_walking_test()
 	tlc.init();
 
 	while (1) {
-		for (unsigned int face = 0;
-			 ARRAY_SIZE(s_face_coords_middle_test); ++face) {
+		for (unsigned int face_i = 0;
+			 face_i < ARRAY_SIZE(s_faces_walking_test); ++face_i) {
+			uint8_t face = s_faces_walking_test[face_i];
 			fp_t x = s_face_coords_middle_test[face * 3 + 0];
 			fp_t y = s_face_coords_middle_test[face * 3 + 1];
 			fp_t z = s_face_coords_middle_test[face * 3 + 2];
@@ -91,7 +92,7 @@ static void do_faces_walking_test()
 				fp_t t, u, v;
 				if (fixed_intersect_triangle(orig, dir,
 											 vert0, vert1, vert2,
-											 &t, &u, &v) && t < 0) {
+											 &t, &u, &v) && t > 0) {
 					uint8_t face_idx = i/9*9;
 					tlc.clear();
 
