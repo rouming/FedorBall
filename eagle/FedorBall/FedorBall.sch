@@ -7506,30 +7506,30 @@ In this library the device names are the same as the pin names of the symbols, t
 </net>
 <net name="INT1" class="0">
 <segment>
-<pinref part="IC1" gate="G$1" pin="(INT0)PD2"/>
-<wire x1="15.24" y1="-43.18" x2="25.4" y2="-43.18" width="0.1524" layer="91"/>
-<junction x="25.4" y="-43.18"/>
-<label x="17.78" y="-43.18" size="1.778" layer="95"/>
-</segment>
-<segment>
 <pinref part="X1" gate="-3" pin="S"/>
 <wire x1="76.2" y1="-43.18" x2="81.28" y2="-43.18" width="0.1524" layer="91"/>
 <label x="81.28" y="-43.18" size="1.778" layer="95" rot="R180"/>
 <junction x="81.28" y="-43.18"/>
 </segment>
-</net>
-<net name="INT0" class="0">
 <segment>
 <pinref part="IC1" gate="G$1" pin="(INT1)PD3"/>
 <wire x1="15.24" y1="-40.64" x2="25.4" y2="-40.64" width="0.1524" layer="91"/>
 <junction x="25.4" y="-40.64"/>
 <label x="17.78" y="-40.64" size="1.778" layer="95"/>
 </segment>
+</net>
+<net name="INT0" class="0">
 <segment>
 <pinref part="X1" gate="-4" pin="S"/>
 <wire x1="76.2" y1="-40.64" x2="81.28" y2="-40.64" width="0.1524" layer="91"/>
 <label x="81.28" y="-40.64" size="1.778" layer="95" rot="R180"/>
 <junction x="81.28" y="-40.64"/>
+</segment>
+<segment>
+<pinref part="IC1" gate="G$1" pin="(INT0)PD2"/>
+<wire x1="15.24" y1="-43.18" x2="25.4" y2="-43.18" width="0.1524" layer="91"/>
+<junction x="25.4" y="-43.18"/>
+<label x="17.78" y="-43.18" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="XLAT" class="0">
