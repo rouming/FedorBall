@@ -26,12 +26,16 @@
 /* Size must be 2^N */
 #define UART_TX_BUFF_SZ (1<<8)
 
+#define R_RGB(rgb) (((rgb)>>16) & 0xff)
+#define G_RGB(rgb) (((rgb)>>8) & 0xff)
+#define B_RGB(rgb) ((rgb) & 0xff)
+
 /* Set RGB color for tlc */
-#define TLC_SET_RGB(tlc, tlc_vert, r, g, b)				\
+#define TLC_SET_RGB(tlc, tlc_vert, rgb)					\
 	do {												\
-		tlc.set((tlc_vert)[0], (r) << 4);				\
-		tlc.set((tlc_vert)[1], (g) << 4);				\
-		tlc.set((tlc_vert)[2], (b) << 4);				\
+		tlc.set((tlc_vert)[0], R_RGB(rgb) << 4);		\
+		tlc.set((tlc_vert)[1], G_RGB(rgb) << 4);		\
+		tlc.set((tlc_vert)[2], B_RGB(rgb) << 4);		\
 	} while (0)
 
 static unsigned char s_uart_rx_buff[UART_RX_BUFF_SZ];
@@ -94,24 +98,27 @@ static void do_faces_walking_test()
 											 vert0, vert1, vert2,
 											 &t, &u, &v) && t > 0) {
 					uint8_t face_idx = i/9*9;
+					// dim red
+					uint32 rgb = 0x400000;
+
 					tlc.clear();
 
 					// Set color for every tlc led in pentagon face
 					TLC_SET_RGB(tlc,
 								&s_leds_vert[s_vert_tri_faces[face_idx + 0] * 3],
-								0xff, 0x00, 0x00);
+								rgb);
 					TLC_SET_RGB(tlc,
 								&s_leds_vert[s_vert_tri_faces[face_idx + 1] * 3],
-								0xff, 0x00, 0x00);
+								rgb);
 					TLC_SET_RGB(tlc,
 								&s_leds_vert[s_vert_tri_faces[face_idx + 2] * 3],
-								0xff, 0x00, 0x00);
+								rgb);
 					TLC_SET_RGB(tlc,
 								&s_leds_vert[s_vert_tri_faces[face_idx + 7] * 3],
-								0xff, 0x00, 0x00);
+								rgb);
 					TLC_SET_RGB(tlc,
 								&s_leds_vert[s_vert_tri_faces[face_idx + 8] * 3],
-								0xff, 0x00, 0x00);
+								rgb);
 
 					// Commit
 					tlc.update();
@@ -196,39 +203,37 @@ static void ball_loop()
 										 vert0, vert1, vert2,
 										 &t, &u, &v) && t < 0) {
 				uint8_t face_idx = i/9*9;
+				// dim red
+				uint32_t rgb = 0x400000;
+
 				tlc.clear();
 
 				// Set color for every tlc led in pentagon face
 				TLC_SET_RGB(tlc,
 							&s_leds_vert[s_vert_tri_faces[face_idx + 0] * 3],
-							0xff, 0x00, 0x00);
+							rgb);
 				TLC_SET_RGB(tlc,
 							&s_leds_vert[s_vert_tri_faces[face_idx + 1] * 3],
-							0xff, 0x00, 0x00);
+							rgb);
 				TLC_SET_RGB(tlc,
 							&s_leds_vert[s_vert_tri_faces[face_idx + 2] * 3],
-							0xff, 0x00, 0x00);
+							rgb);
 				TLC_SET_RGB(tlc,
 							&s_leds_vert[s_vert_tri_faces[face_idx + 7] * 3],
-							0xff, 0x00, 0x00);
+							rgb);
 				TLC_SET_RGB(tlc,
 							&s_leds_vert[s_vert_tri_faces[face_idx + 8] * 3],
-							0xff, 0x00, 0x00);
+							rgb);
 
 				// Commit
 				tlc.update();
-
-				LOG("found face %u, v1=%u, v2=%u, v3=%u\n\n",
-					i/9,
-					s_vert_tri_faces[i + 0],
-					s_vert_tri_faces[i + 1],
-					s_vert_tri_faces[i + 2]);
 
 				break;
 			}
 		}
 
-		_delay_ms(100);
+		// 50 Hz
+		_delay_ms(20);
 	}
 }
 
