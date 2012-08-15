@@ -132,7 +132,7 @@ static void do_faces_walking_test()
 }
 #endif /* FACES_WALKING_TEST */
 
-void mma7455_test()
+static void ball_loop()
 {
 	int error;
 	uint8_t c;
@@ -249,7 +249,7 @@ int main()
 	return 0;
 #endif
 
-	mma7455_test();
+	ball_loop();
 
 	return 0;
 }
