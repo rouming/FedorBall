@@ -54,7 +54,7 @@
 //    The offset is influenced by the slightest vibration
 //    (like a computer on the table).
 //
-int MMA7455_init(void)
+int MMA7455_init(int mode, unsigned char do_calibration)
 {
 	int x, y, z, error;
 	xyz_union xyz;
@@ -88,6 +88,10 @@ int MMA7455_init(void)
 
 	if (c1 != c2)
 		return (-99);
+
+	// Nothing to do here if calibration skipped
+	if (!do_calibration)
+		return (0);
 
 	// Clear the offset registers.
 	// If the Arduino was reset or with a warm-boot,

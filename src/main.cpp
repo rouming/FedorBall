@@ -5,6 +5,7 @@
  */
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/sleep.h>
 #include <util/delay.h>
 #include <string.h>
 
@@ -21,11 +22,26 @@
 #include "std.h"
 #include "raytri.h"
 
+/* 2g, pulse mode */
+#define MMA7455_2G_PULSE_MODE (_BV(MMA7455_GLVL0) | \
+							   _BV(MMA7455_MODE0) | \
+							   _BV(MMA7455_MODE1))
+/* 2g, measurement mode */
+#define MMA7455_2G_MEASUREMENT_MODE (_BV(MMA7455_GLVL0) | \
+									 _BV(MMA7455_MODE0))
+
+/* Rate in Hz, value must be big enough to store the result
+   of F_CPU/TIMER0_RATE in 8-bit timer register */
+#define TIMER0_RATE 100000UL
+
 /* Size must be 2^N */
 #define UART_RX_BUFF_SZ (1<<2)
 /* Size must be 2^N */
 #define UART_TX_BUFF_SZ (1<<8)
 
+#define ABS(m) ((m) > 0 ? (m) : -(m))
+
+/* Extract RGB components */
 #define R_RGB(rgb) (((rgb)>>16) & 0xff)
 #define G_RGB(rgb) (((rgb)>>8) & 0xff)
 #define B_RGB(rgb) ((rgb) & 0xff)
@@ -40,9 +56,10 @@
 
 static unsigned char s_uart_rx_buff[UART_RX_BUFF_SZ];
 static unsigned char s_uart_tx_buff[UART_TX_BUFF_SZ];
+static volatile uint32_t s_msecs;
 
 /* Forward RX to TX */
-void uart_rx_to_tx(void* rx_cb_data)
+static void uart_rx_to_tx(void* rx_cb_data)
 {
 	(void)rx_cb_data;
 
@@ -56,6 +73,76 @@ void uart_rx_to_tx(void* rx_cb_data)
 	memcpy(tx_p, rx_p, sz);
 	uart_rx_advance(sz);
 	uart_tx_advance(sz);
+}
+
+/* Init external INT0, INT1 interrupts to handle pulse
+   detection from accelerometer.
+   NOTE: we do not need interrupts handler routines. these
+		 interrupts will be used only for MCU wake up. */
+static void int01_init()
+{
+	/* enable rising edge on INT0, INT1 */
+	MCUCR |= (1<<ISC00) | (1<<ISC01) | (1<<ISC10) | (1<<ISC11);
+
+	/* enable INT0, INT1 */
+	GICR |= (1<<INT0) | (1<<INT1);
+}
+
+/* set up Timer 0 for ball idle counting */
+static void timer0_init()
+{
+	/* Set CTC mode (Clear Timer on Compare Match) (p.76) */
+	TCCR0 |= (1 << WGM01);
+
+	/* No prescaler (p.85) */
+	TCCR0 |= (1 << CS00);
+
+	/* Set the compare register (OCR0).
+	   Do not forget about -1, because we count from 0 */
+	OCR0 = F_CPU / TIMER0_RATE - 1;
+
+	/* Enable Output Compare Match Interrupt when TCNT0 == OCR0 */
+	TIMSK |= (1 << OCIE0);
+}
+
+/* TIMER0 Output Compare Match Interrupt service routine
+   works on TIMER0_RATE */
+ISR(TIMER0_COMP_vect)
+{
+	/* Global variable to count the number timer fires  */
+	static uint16_t s_timer_fires = 0;
+	/* Count msecs */
+	if (++s_timer_fires == TIMER0_RATE / 1000UL) {
+		s_timer_fires = 0;
+		++s_msecs;
+	}
+}
+
+/* put MMA to double pulse mode, put MCU to power down and wait
+   for external interrupt */
+static void goto_sleep()
+{
+	int err;
+
+	/* put mma to 2g, pulse detection, skip calibration */
+	err = MMA7455_init(MMA7455_2G_PULSE_MODE, false);
+	if (err != 0) {
+		LOG("Error: put to pulse mode failed, %u\n", err);
+		return;
+	}
+
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+	cli();
+	sleep_enable();
+	sei();
+	sleep_cpu();
+	sleep_disable();
+
+	/* put mma to 2g, measurement detection, skip calibration */
+	err = MMA7455_init(MMA7455_2G_MEASUREMENT_MODE, false);
+	if (err != 0) {
+		LOG("Error: put to measurement mode failed, %u\n", err);
+	}
 }
 
 #ifdef FACES_WALKING_TEST
@@ -144,8 +231,8 @@ static void ball_loop()
 	int error;
 	uint8_t c;
 
-	// Initialize the MMA7455, and set the offset.
-	error = MMA7455_init();
+	// Initialize the MMA7455, and do calibration
+	error = MMA7455_init(MMA7455_2G_MEASUREMENT_MODE, 1);
 	LOG("Freescale MMA7455 accelerometer, inited=%s\n",
 		(error == 0 ? "OK" : "ERR"));
 
@@ -167,14 +254,43 @@ static void ball_loop()
 	Tlc5940 tlc;
 	tlc.init();
 
+	int prev_inited = 0;
+	int	prev_x = 0, prev_y = 0, prev_z = 0;
+	uint32_t msecs = 0;
+
 	while (1) {
 		int x,y,z, error;
 		x = y = z = 0;
 		error = MMA7455_xyz(&x, &y, &z); // get the accelerometer values.
-		if (error != 0)
+		if (error != 0) {
 			LOG("xyz err: %x\n", error);
-		else
-			LOG("xyz g-force: x=%d y=%d z=%d\n", x, y, z);
+			_delay_ms(100);
+			continue;
+		}
+
+		if (prev_inited &&
+			ABS(prev_x - x) < 5 &&
+			ABS(prev_y - y) < 5 &&
+			ABS(prev_z - z) < 5) {
+			/* Goto sleep if ball was not touched for 30 secs */
+			if (s_msecs - msecs > 30000) {
+				/* Drop all leds before sleep */
+				tlc.clear();
+				tlc.update();
+				/* Sleep now */
+				goto_sleep();
+				msecs = s_msecs;
+				continue;
+			}
+		}
+		else {
+			msecs = s_msecs;
+
+			prev_inited = 1;
+			prev_x = x;
+			prev_y = y;
+			prev_z = z;
+		}
 
 		fp_t orig[] = {FPZERO, FPZERO, FPZERO};
 		fp_t dir[] = {ITOFP(y), -ITOFP(z), ITOFP(x)};
@@ -245,6 +361,12 @@ int main()
 
 	/* Init TWI(I2C) */
 	twi_init(TWI_FREQ);
+
+	/* Init timer0 */
+	timer0_init();
+
+	/* Init external interrupt INT0, INT1 */
+	int01_init();
 
 	// enable iterrupts
 	sei();
