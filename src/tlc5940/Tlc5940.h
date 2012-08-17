@@ -29,17 +29,17 @@
 
 /** Enables the Timer1 Overflow interrupt, which will fire after an XLAT
     pulse */
-#define set_XLAT_interrupt()    TIFR |= _BV(TOV1); TIMSK = _BV(TOIE1)
+#define set_XLAT_interrupt()    TIFR |= _BV(TOV1); TIMSK |= _BV(TOIE1)
 /** Disables any Timer1 interrupts */
-#define clear_XLAT_interrupt()  TIMSK = 0
+#define clear_XLAT_interrupt()  TIMSK &= ~_BV(TOIE1)
 
 #else
 
 /** Enables the Timer1 Overflow interrupt, which will fire after an XLAT
     pulse */
-#define set_XLAT_interrupt()    TIFR1 |= _BV(TOV1); TIMSK1 = _BV(TOIE1)
+#define set_XLAT_interrupt()    TIFR1 |= _BV(TOV1); TIMSK1 |= _BV(TOIE1)
 /** Disables any Timer1 interrupts */
-#define clear_XLAT_interrupt()  TIMSK1 = 0
+#define clear_XLAT_interrupt()  TIMSK1 &= ~_BV(TOIE1)
 
 #endif
 
