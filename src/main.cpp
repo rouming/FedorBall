@@ -50,6 +50,9 @@
 #define G_RGB(rgb) (((rgb)>>8) & 0xff)
 #define B_RGB(rgb) ((rgb) & 0xff)
 
+/* Circular shift of RBB, from B to R */
+#define SHIFT_RGB(rgb) (((rgb)<<8 |(rgb)>>16) & 0xffffff)
+
 /* Set RGB color for tlc */
 #define TLC_SET_RGB(tlc, tlc_vert, rgb)					\
 	do {												\
@@ -307,7 +310,12 @@ static void ball_loop()
 
 	int prev_inited = 0;
 	int	prev_x = 0, prev_y = 0, prev_z = 0;
+	uint32_t prev_face = 0;
+	uint32_t face = 0;
 	uint32_t msecs = 0;
+
+	/* Dim color, thinking about power saving */
+	uint32_t rgb = 0x400000;
 
 	while (1) {
 		int x,y,z, error;
@@ -369,9 +377,19 @@ static void ball_loop()
 			if (fixed_intersect_triangle(orig, dir,
 										 vert0, vert1, vert2,
 										 &t, &u, &v) && t < 0) {
-				uint8_t face_idx = i/9*9;
-				// dim red
-				uint32_t rgb = 0x400000;
+				uint8_t face_idx;
+
+				face = i/9;
+				face_idx = face*9;
+
+				/* Get next color component if face was changed */
+				if (prev_face != face) {
+					rgb = SHIFT_RGB(rgb);
+					prev_face = face;
+				}
+
+				/* here we do not try to optimize and to skip colors
+				   update if prev_face == face */
 
 				tlc.clear();
 
