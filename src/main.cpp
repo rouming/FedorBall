@@ -22,6 +22,10 @@
 #include "std.h"
 #include "raytri.h"
 
+/* 2g, level mode */
+#define MMA7455_2G_LEVEL_MODE (_BV(MMA7455_GLVL0) | \
+							   _BV(MMA7455_MODE1))
+
 /* 2g, pulse mode */
 #define MMA7455_2G_PULSE_MODE (_BV(MMA7455_GLVL0) | \
 							   _BV(MMA7455_MODE0) | \
@@ -121,25 +125,69 @@ ISR(TIMER0_COMP_vect)
 	}
 }
 
-/* put MMA to double pulse mode, put MCU to power down and wait
-   for external interrupt */
+/* put MMA to level mode, put MCU to sleep and wait
+   for external interrupt from accelerometer */
 static void goto_sleep()
 {
 	int err;
+	uint8_t val;
 
-	/* put mma to 2g, pulse detection, skip calibration */
-	err = MMA7455_init(MMA7455_2G_PULSE_MODE, false);
+	/* put mma to 2g, level detection, skip calibration */
+	err = MMA7455_init(MMA7455_2G_LEVEL_MODE, false);
 	if (err != 0) {
-		LOG("Error: put to pulse mode failed, %u\n", err);
+		LOG("Error: put to level mode failed, %u\n", err);
 		return;
 	}
 
-	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+	/* INT1 pin is level detection interrupt */
+	val = _BV(MMA7455_INTREG0);
+	err = MMA7455_write(MMA7455_CTL1, &val, 1);
+	if (err != 0) {
+		LOG("Error: write of CTL1 failed, %u\n", err);
+		return;
+	}
+	/* 4g * 16 counts/g = 0x40 */
+	val = 0x40;
+	err = MMA7455_write(MMA7455_LDTH, &val, 1);
+	if (err != 0) {
+		LOG("Error: write of LDTH failed, %u\n", err);
+		return;
+	}
+
+	/* INT2 pin to high (clear last interrupt) */
+	val = 0x03;
+	err = MMA7455_write(MMA7455_INTRST, &val, 1);
+	if (err != 0) {
+		LOG("Error: write of INTRST failed, %u\n", err);
+		return;
+	}
+	/* INT2 pin to low (clear last interrupt) */
+	val = 0;
+	err = MMA7455_write(MMA7455_INTRST, &val, 1);
+	if (err != 0) {
+		LOG("Error: write of INTRST failed, %u\n", err);
+		return;
+	}
+
+	uart_disable();
+
+	set_sleep_mode(SLEEP_MODE_IDLE);
 	cli();
+
+	/* save previous timsk and stop all timers to avoid spurious wakeups*/
+	uint8_t timsk = TIMSK;
+	TIMSK = 0;
+
 	sleep_enable();
 	sei();
 	sleep_cpu();
 	sleep_disable();
+
+	/* restore timers */
+	TIMSK = timsk;
+
+	/* enable uart */
+	uart_enable();
 
 	/* put mma to 2g, measurement detection, skip calibration */
 	err = MMA7455_init(MMA7455_2G_MEASUREMENT_MODE, false);
