@@ -54,7 +54,7 @@
 //    The offset is influenced by the slightest vibration
 //    (like a computer on the table).
 //
-int MMA7455_init(int mode, unsigned char do_calibration)
+int MMA7455_init(uint8_t mode, unsigned char do_calibration)
 {
 	int x, y, z, error;
 	xyz_union xyz;
@@ -75,8 +75,7 @@ int MMA7455_init(int mode, unsigned char do_calibration)
 	// a single byte. So only the two functions to write
 	// and read multiple bytes are used.
 
-	// Set mode for "2g sensitivity" and "Measurement Mode".
-	c1 = _BV(MMA7455_GLVL0) | _BV(MMA7455_MODE0);
+	c1 = mode;
 	error = MMA7455_write(MMA7455_MCTL, &c1, 1);
 	if (error != 0)
 		return (error);

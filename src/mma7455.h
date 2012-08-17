@@ -136,7 +136,7 @@ typedef union xyz_union
 
 } xyz_union;
 
-int MMA7455_init(int mode, unsigned char do_calibration);
+int MMA7455_init(uint8_t mode, unsigned char do_calibration);
 int MMA7455_xyz( int *pX, int *pY, int *pZ);
 int MMA7455_read(uint8_t reg, uint8_t *buffer, int size);
 int MMA7455_write(uint8_t reg, const uint8_t *buffer, int size);
