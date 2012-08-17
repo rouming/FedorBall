@@ -95,6 +95,21 @@ void uart_init(uint16_t bauds,
 	UCSRB = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE);
 }
 
+void uart_enable(void)
+{
+	/* Enable receiver, transmitter and RX interrupt */
+	UCSRB = (1<<RXEN)|(1<<TXEN)|(1<<RXCIE);
+}
+
+void uart_disable(void)
+{
+	/* Wait for TX completion */
+	while (UCSRB & (1 << UDRIE))
+		;
+	/* Disable receiver, transmitter and RX interrupt */
+	UCSRB &= ~((1<<RXEN)|(1<<TXEN)|(1<<RXCIE));
+}
+
 void uart_rx_ptr(void** p1, uint16_t* sz1)
 {
 	void *p2;

@@ -17,6 +17,11 @@ void uart_init(uint16_t bauds,
 			   uint8_t* tx_buff, uint16_t tx_sz,
 			   uart_rx_cb cb, void* user_data);
 
+/* Disable TX and RX */
+void uart_enable(void);
+/* Enable TX and RX */
+void uart_disable(void);
+
 /* Get UART RX buffer with its size available to read */
 void uart_rx_ptr(void** ptr, uint16_t* sz);
 /* Get UART TX buffer with its size available to write */
