@@ -75,17 +75,20 @@ static void uart_rx_to_tx(void* rx_cb_data)
 	uart_tx_advance(sz);
 }
 
-/* Init external INT0, INT1 interrupts to handle pulse
-   detection from accelerometer.
-   NOTE: we do not need interrupts handler routines. these
-		 interrupts will be used only for MCU wake up. */
-static void int01_init()
+/* Init external INT1 interrupt to handle level
+   detection from accelerometer. */
+void int1_init()
 {
-	/* enable rising edge on INT0, INT1 */
-	MCUCR |= (1<<ISC00) | (1<<ISC01) | (1<<ISC10) | (1<<ISC11);
+	/* enable rising edge on INT1 */
+	MCUCR |= (1<<ISC10) | (1<<ISC11);
 
-	/* enable INT0, INT1 */
-	GICR |= (1<<INT0) | (1<<INT1);
+	/* enable INT1 */
+	GICR |= (1<<INT1);
+}
+
+/* Level interrupt from MMA7455 which wakes up MCU from sleep */
+ISR(INT1_vect)
+{
 }
 
 /* set up Timer 0 for ball idle counting */
@@ -365,8 +368,8 @@ int main()
 	/* Init timer0 */
 	timer0_init();
 
-	/* Init external interrupt INT0, INT1 */
-	int01_init();
+	/* Init external interrupt INT1 */
+	int1_init();
 
 	// enable iterrupts
 	sei();
