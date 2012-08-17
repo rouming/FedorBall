@@ -77,7 +77,7 @@ static void uart_rx_to_tx(void* rx_cb_data)
 
 /* Init external INT1 interrupt to handle level
    detection from accelerometer. */
-void int1_init()
+static void int1_init()
 {
 	/* enable rising edge on INT1 */
 	MCUCR |= (1<<ISC10) | (1<<ISC11);
