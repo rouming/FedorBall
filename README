@@ -3,6 +3,38 @@ NAME
     with accelerometer MMA7455 and turns on leds in special order
     using 4 led drivers TLC5940.
 
+USED MATERIALS
+    ATMEGA16
+        http://www.atmel.com/Images/doc2466.pdf
+        http://www.atmel.com/Images/doc8453.pdf
+        http://www.tty1.net/blog/2008-04-29-avr-gcc-optimisations_en.html
+
+    TLC5940
+        http://code.google.com/p/tlc5940arduino/
+        http://www.ti.com/lit/ds/symlink/tlc5940.pdf
+
+    MMA7455
+        http://arduino.cc/playground/Main/MMA7455
+        http://www.freescale.com/files/sensors/doc/app_note/AN3468.pdf
+        http://cache.freescale.com/files/sensors/doc/data_sheet/MMA7455L.pdf?fpsp=1
+
+    TWI(I2C)
+        http://easyelectronics.ru/avr-uchebnyj-kurs-ispolzovanie-avr-twi-dlya-raboty-s-shinoj-iic-i2c.html
+
+    DODECAHEDRON INFO
+        http://ru.wikipedia.org/wiki/Додекаэдр
+        http://www.maths.surrey.ac.uk/hosted-sites/R.Knott/Fibonacci/phi3DGeom.html
+
+    RAY-TRIANGLE INTERSECTION
+        http://jgt.akpeters.com/papers/MollerTrumbore97/
+
+    FIXED POINT
+        http://gcc.gnu.org/wiki/FixedPointArithmetic
+        http://x86asm.net/articles/fixed-point-arithmetic-and-tricks/
+
+    OPENGL
+        http://www.songho.ca/opengl/gl_vertexarray.html
+
 AUTHOR
     Roman Pen
 
